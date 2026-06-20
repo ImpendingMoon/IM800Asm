@@ -7,6 +7,7 @@
             if (args.Length < 2)
             {
                 Console.WriteLine("Usage: IM800Asm <source file> <output file>");
+                return;
             }
 
             string sourceFilePath = args[0];
@@ -24,9 +25,33 @@
                 return;
             }
 
-            string[] sourceLines = File.ReadAllLines(sourceFilePath);
+            string source = File.ReadAllText(sourceFilePath);
 
+            Lexer lexer = new(source);
 
+            Result<List<Token>> tokenizeResult = lexer.Tokenize();
+
+            Console.WriteLine("=== WARNINGS ===");
+            foreach (Result.Error warning in tokenizeResult.Warnings)
+            {
+                Console.WriteLine(warning);
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("=== ERRORS ===");
+            foreach (Result.Error error in tokenizeResult.Errors)
+            {
+                Console.WriteLine(error);
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("=== TOKENS ===");
+            foreach (Token token in tokenizeResult.ResultObject)
+            {
+                Console.WriteLine(token);
+            }
         }
     }
 }

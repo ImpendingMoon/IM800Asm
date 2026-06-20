@@ -26,7 +26,6 @@ internal static class Constants
         Number,
         String,
         Comma,
-        Colon,
         LParen,
         RParen,
         LBracket,
