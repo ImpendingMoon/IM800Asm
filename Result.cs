@@ -5,49 +5,49 @@
 /// </summary>
 public class Result
 {
-    private readonly List<Error> _errors = [];
-    private readonly List<Error> _warnings = [];
+	private readonly List<Error> _errors = [];
+	private readonly List<Error> _warnings = [];
 
-    public bool IsSuccess => Errors.Count == 0;
+	public bool IsSuccess => Errors.Count == 0;
 
-    public IReadOnlyList<Error> Errors => _errors;
-    public IReadOnlyList<Error> Warnings => _warnings;
+	public IReadOnlyList<Error> Errors => _errors;
+	public IReadOnlyList<Error> Warnings => _warnings;
 
-    /// <summary>Adds an error to this result.</summary>
-    public void AddError(string source, string message)
-    {
-        _errors.Add(new Error(source, message));
-    }
+	/// <summary>Adds an error to this result.</summary>
+	public void AddError(string source, string message)
+	{
+		_errors.Add(new Error(source, message));
+	}
 
-    /// <summary>Adds a warning to this result.</summary>
-    public void AddWarning(string source, string message)
-    {
-        _warnings.Add(new Error(source, message));
-    }
+	/// <summary>Adds a warning to this result.</summary>
+	public void AddWarning(string source, string message)
+	{
+		_warnings.Add(new Error(source, message));
+	}
 
-    /// <summary>Appends the messages of another result to this result.</summary>
-    public void Combine(Result other)
-    {
-        _errors.AddRange(other._errors);
-        _warnings.AddRange(other._warnings);
-    }
+	/// <summary>Appends the messages of another result to this result.</summary>
+	public void Combine(Result other)
+	{
+		_errors.AddRange(other._errors);
+		_warnings.AddRange(other._warnings);
+	}
 
-    public class Error
-    {
-        public Error(string source, string message)
-        {
-            Source = source;
-            Message = message;
-        }
+	public class Error
+	{
+		public Error(string source, string message)
+		{
+			Source = source;
+			Message = message;
+		}
 
-        public string Source { get; set; }
-        public string Message { get; set; }
+		public string Source { get; set; }
+		public string Message { get; set; }
 
-        public override string ToString()
-        {
-            return $"{Source}: {Message}";
-        }
-    }
+		public override string ToString()
+		{
+			return $"{Source}: {Message}";
+		}
+	}
 }
 
 /// <summary>
@@ -57,10 +57,10 @@ public class Result
 /// <typeparam name="T">Type of the result object.</typeparam>
 public class Result<T> : Result
 {
-    public Result(T result)
-    {
-        ResultObject = result;
-    }
+	public Result(T result)
+	{
+		ResultObject = result;
+	}
 
-    public T ResultObject { get; set; }
+	public T ResultObject { get; set; }
 }
