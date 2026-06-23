@@ -65,6 +65,12 @@ namespace IM800Asm
 				result.Combine(instructionResult);
 				result.ResultObject = instructionResult.ResultObject;
 			}
+			else if (TryParseDirective(out Result<Statement?> directiveResult))
+			{
+				Debug.Assert(directiveResult.ResultObject is not null);
+				result.Combine(directiveResult);
+				result.ResultObject = directiveResult.ResultObject;
+			}
 			else
 			{
 				result.AddError("Parser", $"{t.Line}:{t.Column}:\tunexpected token {t}");
@@ -187,9 +193,67 @@ namespace IM800Asm
 
 			Advance();
 
-			// TODO: ParseOperands
+			Result<List<Operand>> operandResult = ParseOperands();
+			result.Combine(operandResult);
+			result.ResultObject.Operands = operandResult.ResultObject;
 
 			return true;
+		}
+
+		private bool TryParseDirective(out Result<Statement?> result)
+		{
+			result = new(null);
+
+			Token t = Current();
+
+			string canon = t.Lexeme.ToUpperInvariant();
+
+			if (canon.StartsWith('.'))
+			{
+				canon = canon[1..];
+			}
+
+			if (!Enum.TryParse(canon, out Constants.Directive directive))
+			{
+				return false;
+			}
+
+			result.ResultObject = new(
+				t.Line,
+				t.Column,
+				Constants.StatementType.Directive,
+				t.Lexeme,
+				canon
+			)
+			{
+				Directive = directive,
+			};
+
+			Advance();
+
+			Result<List<Operand>> operandResult = ParseOperands();
+			result.Combine(operandResult);
+			result.ResultObject.Operands = operandResult.ResultObject;
+
+			return true;
+		}
+
+		private Result<List<Operand>> ParseOperands()
+		{
+			List<Operand> operands = [];
+			Result<List<Operand>> result = new(operands);
+
+			Token t = Current();
+
+			while (t.Type != Constants.TokenType.NewLine && t.Type != Constants.TokenType.EndOfFile)
+			{
+				// TODO
+
+				Advance();
+				t = Current();
+			}
+
+			return result;
 		}
 
 		private void Advance()
