@@ -27,12 +27,20 @@
 
 			string source = File.ReadAllText(sourceFilePath);
 
+			Result result = new();
+
 			Lexer lexer = new(source);
 
 			Result<List<Token>> tokenizeResult = lexer.Tokenize();
+			result.Combine(tokenizeResult);
+
+			GrammarParser grammarParser = new(tokenizeResult.ResultObject);
+
+			Result<List<Statement>> grammarParseResult = grammarParser.Parse();
+			result.Combine(grammarParseResult);
 
 			Console.WriteLine("=== WARNINGS ===");
-			foreach (Result.Error warning in tokenizeResult.Warnings)
+			foreach (Result.Error warning in result.Warnings)
 			{
 				Console.WriteLine(warning);
 			}
@@ -40,7 +48,7 @@
 			Console.WriteLine();
 
 			Console.WriteLine("=== ERRORS ===");
-			foreach (Result.Error error in tokenizeResult.Errors)
+			foreach (Result.Error error in result.Errors)
 			{
 				Console.WriteLine(error);
 			}
@@ -51,6 +59,13 @@
 			foreach (Token token in tokenizeResult.ResultObject)
 			{
 				Console.WriteLine(token);
+			}
+			Console.WriteLine();
+
+			Console.WriteLine("=== STATEMENTS ===");
+			foreach (Statement statement in grammarParseResult.ResultObject)
+			{
+				Console.WriteLine(statement);
 			}
 		}
 	}

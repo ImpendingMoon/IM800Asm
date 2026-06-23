@@ -53,6 +53,26 @@ internal static class Constants
 		EndOfFile,
 	}
 
+	public enum StatementType
+	{
+		LabelDeclaration,
+		Instruction,
+		Directive,
+		EndOfFile,
+	}
+
+	public enum OperandType
+	{
+		Register,
+		Expression,
+		IndirectRegister,
+		IndirectExpression,
+		Indexed,
+		String,
+		Condition,
+		BlockOperand,
+	}
+
 	public enum Instruction
 	{
 		LD, EX, PUSH, POP, LEA, EXA, EXX, EXI, IN, OUT,
@@ -82,18 +102,14 @@ internal static class Constants
 		NZ, Z, NC, C, PO, PE, P, M,
 	}
 
-	public enum BlockIncrement
+	public enum BlockOperand
 	{
 		D, I,
-	}
-
-	public enum BlockRepeat
-	{
 		S, R,
 	}
 
 	public enum Size
 	{
-		BYTE, WORD, DWORD, QWORD,
+		Byte, Word, Dword, Qword,
 	}
 }
