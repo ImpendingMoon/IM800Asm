@@ -111,16 +111,6 @@ namespace IM800Asm
 			return true;
 		}
 
-		private Token Current()
-		{
-			if (_position >= _tokens.Count)
-			{
-				return new(0, 0, Constants.TokenType.EndOfFile);
-			}
-
-			return _tokens[_position];
-		}
-
 		private bool TryParseInstruction(out Result<Statement?> result)
 		{
 			result = new(null);
@@ -247,13 +237,134 @@ namespace IM800Asm
 
 			while (t.Type != Constants.TokenType.NewLine && t.Type != Constants.TokenType.EndOfFile)
 			{
-				// TODO
+				Result<Operand> operandResult;
+
+				if (t.Type == Constants.TokenType.LBracket)
+				{
+					Advance();
+					operandResult = ParseMemoryOperand();
+				}
+				else
+				{
+					operandResult = ParseOperand();
+				}
+
+				result.Combine(operandResult);
+				operands.Add(operandResult.ResultObject);
 
 				Advance();
 				t = Current();
 			}
 
 			return result;
+		}
+
+		private Result<Operand> ParseOperand()
+		{
+			Token t = Current();
+
+			Operand operand = new(t.Line, t.Column, Constants.OperandType.Unknown);
+			Result<Operand> result = new(operand);
+
+			bool sawRBracket = false;
+
+			if (IsEndOfOperand(t) || t.Type is Constants.TokenType.RBracket)
+			{
+				if (t.Type is Constants.TokenType.RBracket)
+				{
+					sawRBracket = true;
+				}
+
+				result.AddError("Parser", $"{t.Line}:{t.Column}:\texpected operand");
+			}
+
+			while (!IsEndOfOperand(t))
+			{
+				if (t.Type is Constants.TokenType.RBracket)
+				{
+					sawRBracket = true;
+
+					if (!IsEndOfOperand(Next()))
+					{
+						result.AddError("Parser", $"{t.Line}:{t.Column}:\texpected end of operand after closing bracket");
+					}
+				}
+
+				Advance();
+				t = Current();
+			}
+
+			// Advance past end of operand token
+			Advance();
+
+			if (!sawRBracket)
+			{
+				result.AddError("Parser", $"{t.Line}:{t.Column}:\texpected closing bracket in indirect operand");
+			}
+
+			return result;
+		}
+
+		private Result<Operand> ParseMemoryOperand()
+		{
+			Token t = Current();
+
+			Operand operand = new(t.Line, t.Column, Constants.OperandType.Unknown);
+			Result<Operand> result = new(operand);
+
+			return result;
+		}
+
+		private bool TryParseRegister(out Result<Operand?> result)
+		{
+			result = new(null);
+			return false;
+		}
+
+		private bool TryParseCondition(out Result<Operand?> result)
+		{
+			result = new(null);
+			return false;
+		}
+
+		private bool TryParseBlockOperand(out Result<Operand?> result)
+		{
+			result = new(null);
+			return false;
+		}
+
+		private bool TryParseSizeOperand(out Result<Operand?> result)
+		{
+			result = new(null);
+			return false;
+		}
+
+		private bool IsEndOfOperand(Token t)
+		{
+			return t.Type is Constants.TokenType.Unknown
+				or Constants.TokenType.Comma
+				or Constants.TokenType.NewLine
+				or Constants.TokenType.EndOfFile;
+		}
+
+		private Token Current()
+		{
+			if (_position >= _tokens.Count)
+			{
+				return new(0, 0, Constants.TokenType.EndOfFile);
+			}
+
+			return _tokens[_position];
+		}
+
+		private Token Next()
+		{
+			if (_position + 1 >= _tokens.Count)
+			{
+				return new(0, 0, Constants.TokenType.EndOfFile);
+			}
+
+			return _tokens[_position + 1];
 		}
 
 		private void Advance()

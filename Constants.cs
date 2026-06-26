@@ -63,6 +63,7 @@ internal static class Constants
 
 	public enum OperandType
 	{
+		Unknown = 0,
 		Register,
 		Expression,
 		IndirectRegister,
