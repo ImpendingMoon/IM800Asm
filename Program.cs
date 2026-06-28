@@ -34,11 +34,6 @@
 			Result<List<Token>> tokenizeResult = lexer.Tokenize();
 			result.Combine(tokenizeResult);
 
-			GrammarParser grammarParser = new(tokenizeResult.ResultObject);
-
-			Result<List<Statement>> grammarParseResult = grammarParser.Parse();
-			result.Combine(grammarParseResult);
-
 			Console.WriteLine("=== WARNINGS ===");
 			foreach (Result.Error warning in result.Warnings)
 			{
@@ -61,12 +56,6 @@
 				Console.WriteLine(token);
 			}
 			Console.WriteLine();
-
-			Console.WriteLine("=== STATEMENTS ===");
-			foreach (Statement statement in grammarParseResult.ResultObject)
-			{
-				Console.WriteLine(statement);
-			}
 		}
 	}
 }

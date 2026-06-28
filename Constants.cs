@@ -69,7 +69,6 @@ internal static class Constants
 		IndirectRegister,
 		IndirectExpression,
 		Indexed,
-		String,
 		Condition,
 		BlockOperand,
 		Size,
