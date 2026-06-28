@@ -64,7 +64,7 @@ namespace IM800Asm
 					result.ResultObject = token;
 				}
 			}
-			else if (c == ';')
+			else if (c == Constants.CommentChar)
 			{
 				SkipToNewLine();
 				// Leave null, end may be newline or end of file, next call to NextToken will catch
@@ -184,6 +184,10 @@ namespace IM800Asm
 			{
 				case ',':
 					token = new(_line, _column, Constants.TokenType.Comma, ",");
+					matchedOne = true;
+					break;
+				case ':':
+					token = new(_line, _column, Constants.TokenType.Colon, ":");
 					matchedOne = true;
 					break;
 				case '(':
@@ -322,7 +326,7 @@ namespace IM800Asm
 
 			char c = Current();
 
-			if (c != '"')
+			if (c != Constants.StringDelim)
 			{
 				return false;
 			}
@@ -335,7 +339,7 @@ namespace IM800Asm
 			Advance();
 			c = Current();
 
-			while (c != '"')
+			while (c != Constants.StringDelim)
 			{
 				if (IsNewLine(c) || c == '\0')
 				{
@@ -402,36 +406,36 @@ namespace IM800Asm
 
 			string lexeme = sb.ToString();
 			string text = lexeme.ToLower();
-			int radix = 10;
+			int radix = Constants.DecimalRadix;
 
-			if (text.StartsWith("0x"))
+			if (text.StartsWith(Constants.HexPrefix))
 			{
-				radix = 16;
+				radix = Constants.HexRadix;
 				text = text[2..];
 			}
-			else if (text.StartsWith("0b"))
+			else if (text.StartsWith(Constants.BinaryPrefix))
 			{
-				radix = 2;
+				radix = Constants.BinaryRadix;
 				text = text[2..];
 			}
-			else if (text.StartsWith("0o"))
+			else if (text.StartsWith(Constants.OctalPrefix))
 			{
-				radix = 8;
+				radix = Constants.OctalRadix;
 				text = text[2..];
 			}
-			else if (text.EndsWith('h'))
+			else if (text.EndsWith(Constants.HexSuffix))
 			{
-				radix = 16;
+				radix = Constants.HexRadix;
 				text = text[..^1];
 			}
-			else if (text.EndsWith('b'))
+			else if (text.EndsWith(Constants.BinarySuffix))
 			{
-				radix = 2;
+				radix = Constants.BinaryRadix;
 				text = text[..^1];
 			}
-			else if (text.EndsWith('o'))
+			else if (text.EndsWith(Constants.OctalSuffix))
 			{
-				radix = 8;
+				radix = Constants.OctalRadix;
 				text = text[..^1];
 			}
 
@@ -614,7 +618,7 @@ namespace IM800Asm
 
 		private static bool IsIdentifierChar(char c)
 		{
-			return char.IsAsciiLetterOrDigit(c) || c is '.' or '_' or ':';
+			return char.IsAsciiLetterOrDigit(c) || c is '.' or '_';
 		}
 
 		private void ConsumeNewLine()

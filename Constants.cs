@@ -10,10 +10,10 @@ internal static class Constants
 	public const char BinarySuffix = 'b';
 	public const char OctalSuffix = 'o';
 
-	public const int RadixDecimal = 10;
-	public const int RadixHex = 16;
-	public const int RadixBinary = 2;
-	public const int RadixOctal = 8;
+	public const int DecimalRadix = 10;
+	public const int HexRadix = 16;
+	public const int BinaryRadix = 2;
+	public const int OctalRadix = 8;
 
 	public const char CommentChar = ';';
 	public const char StringDelim = '"';
@@ -25,6 +25,7 @@ internal static class Constants
 		Identifier,
 		Number,
 		String,
+		Colon,
 		Comma,
 		LParen,
 		RParen,
@@ -76,7 +77,7 @@ internal static class Constants
 
 	public enum Instruction
 	{
-		LD, EX, PUSH, POP, LEA, EXA, EXX, EXI, IN, OUT,
+		LD, EX, PUSH, POP, LEA, EXH, EXA, EXX, EXI, IN, OUT,
 		ADD, ADC, SUB, SBC, CP, INC, DEC, NEG, EXT, MLT, DIV, SDIV, DAA,
 		AND, OR, XOR, TST, CPL, BIT, SET, RES, RLC, RRC, RL, RR, SLA, SRA, SRL, RLD, RRD,
 		NOP, JP, JR, DJNZ, JAZ, JANZ, CALL, CR, RET, RST, SCF, CCF,
