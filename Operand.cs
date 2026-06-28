@@ -8,6 +8,7 @@ namespace IM800Asm
 			Column = column;
 			Type = type;
 			Lexeme = string.Empty;
+			Text = string.Empty;
 			ExpressionTokens = [];
 		}
 
@@ -19,19 +20,21 @@ namespace IM800Asm
 			Lexeme = lexeme;
 			ExpressionTokens = [];
 		}
-		public Operand(int line, int column, Constants.OperandType type, string lexeme)
+		public Operand(int line, int column, Constants.OperandType type, string lexeme, string text)
 		{
 			Line = line;
 			Column = column;
 			Type = type;
 			Lexeme = lexeme;
 			ExpressionTokens = [];
+			Text = text;
 		}
 
 		public Constants.OperandType Type { get; set; }
 		public int Line { get; set; }
 		public int Column { get; set; }
 		public string Lexeme { get; set; }
+		public string Text { get; set; }
 
 		public Constants.Size? Size { get; set; }
 		public Constants.Instruction? Instruction { get; set; }

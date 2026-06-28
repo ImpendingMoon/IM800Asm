@@ -266,6 +266,41 @@ namespace IM800Asm
 			Operand operand = new(t.Line, t.Column, Constants.OperandType.Unknown);
 			Result<Operand> result = new(operand);
 
+			if (TryParseRegister(out Result<Operand?> registerResult))
+			{
+				Debug.Assert(registerResult.ResultObject is not null);
+				result.Combine(registerResult);
+				result.ResultObject = registerResult.ResultObject;
+			}
+			else if (TryParseCondition(out Result<Operand?> conditionResult))
+			{
+				Debug.Assert(conditionResult.ResultObject is not null);
+				result.Combine(conditionResult);
+				result.ResultObject = conditionResult.ResultObject;
+			}
+			else if (TryParseSizeOperand(out Result<Operand?> sizeResult))
+			{
+				Debug.Assert(sizeResult.ResultObject is not null);
+				result.Combine(sizeResult);
+				result.ResultObject = sizeResult.ResultObject;
+			}
+			else if (TryParseBlockOperand(out Result<Operand?> blockResult))
+			{
+				Debug.Assert(blockResult.ResultObject is not null);
+				result.Combine(blockResult);
+				result.ResultObject = blockResult.ResultObject;
+			}
+
+			return result;
+		}
+
+		private Result<Operand> ParseMemoryOperand()
+		{
+			Token t = Current();
+
+			Operand operand = new(t.Line, t.Column, Constants.OperandType.Unknown);
+			Result<Operand> result = new(operand);
+
 			bool sawRBracket = false;
 
 			if (IsEndOfOperand(t) || t.Type is Constants.TokenType.RBracket)
@@ -305,41 +340,113 @@ namespace IM800Asm
 			return result;
 		}
 
-		private Result<Operand> ParseMemoryOperand()
-		{
-			Token t = Current();
-
-			Operand operand = new(t.Line, t.Column, Constants.OperandType.Unknown);
-			Result<Operand> result = new(operand);
-
-			return result;
-		}
-
 		private bool TryParseRegister(out Result<Operand?> result)
 		{
 			result = new(null);
-			return false;
+
+			Token t = Current();
+
+			if (t.Type != Constants.TokenType.Identifier)
+			{
+				return false;
+			}
+
+			string canon = t.Lexeme.ToUpperInvariant();
+
+			if (!Enum.TryParse(canon, out Constants.Register register))
+			{
+				return false;
+			}
+
+			result.ResultObject = new(t.Line, t.Column, Constants.OperandType.Register, t.Lexeme, canon)
+			{
+				Register = register
+			};
+
+			Advance();
+
+			return true;
 		}
 
 		private bool TryParseCondition(out Result<Operand?> result)
 		{
 			result = new(null);
-			return false;
+
+			Token t = Current();
+
+			if (t.Type != Constants.TokenType.Identifier)
+			{
+				return false;
+			}
+
+			string canon = t.Lexeme.ToUpperInvariant();
+
+			if (!Enum.TryParse(canon, out Constants.Condition condition))
+			{
+				return false;
+			}
+
+			result.ResultObject = new(t.Line, t.Column, Constants.OperandType.Condition, t.Lexeme, canon)
+			{
+				Condition = condition
+			};
+
+			return true;
 		}
 
 		private bool TryParseBlockOperand(out Result<Operand?> result)
 		{
 			result = new(null);
-			return false;
+
+			Token t = Current();
+
+			if (t.Type != Constants.TokenType.Identifier)
+			{
+				return false;
+			}
+
+			string canon = t.Lexeme.ToUpperInvariant();
+
+			if (!Enum.TryParse(canon, out Constants.BlockOperand blockOperand))
+			{
+				return false;
+			}
+
+			result.ResultObject = new(t.Line, t.Column, Constants.OperandType.BlockOperand, t.Lexeme, canon)
+			{
+				BlockOperand = blockOperand
+			};
+
+			return true;
 		}
 
 		private bool TryParseSizeOperand(out Result<Operand?> result)
 		{
 			result = new(null);
-			return false;
+
+			Token t = Current();
+
+			if (t.Type != Constants.TokenType.Identifier)
+			{
+				return false;
+			}
+
+			string canon = t.Lexeme.ToUpperInvariant();
+
+			if (!Enum.TryParse(canon, out Constants.Size size))
+			{
+				return false;
+			}
+
+			result.ResultObject = new(t.Line, t.Column, Constants.OperandType.Size, t.Lexeme, canon)
+			{
+				Size = size
+			};
+
+			return true;
 		}
 
-		private bool IsEndOfOperand(Token t)
+		private static bool IsEndOfOperand(Token t)
 		{
 			return t.Type is Constants.TokenType.Unknown
 				or Constants.TokenType.Comma

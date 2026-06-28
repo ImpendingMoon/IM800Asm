@@ -72,6 +72,7 @@ internal static class Constants
 		String,
 		Condition,
 		BlockOperand,
+		Size,
 	}
 
 	public enum Instruction
