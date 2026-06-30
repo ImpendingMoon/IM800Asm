@@ -34,6 +34,11 @@ internal class Program
 		Result<List<Token>> tokenizeResult = lexer.Tokenize();
 		result.Combine(tokenizeResult);
 
+		Parser parser = new(tokenizeResult.ResultObject);
+
+		Result<List<Statement>> parseResult = parser.Parse();
+		result.Combine(parseResult);
+
 		Console.WriteLine("=== WARNINGS ===");
 		foreach (Result.Error warning in result.Warnings)
 		{
@@ -54,6 +59,12 @@ internal class Program
 		foreach (Token token in tokenizeResult.ResultObject)
 		{
 			Console.WriteLine(token);
+		}
+		Console.WriteLine();
+		Console.WriteLine("=== STATEMENTS ===");
+		foreach (Statement statement in parseResult.ResultObject)
+		{
+			Console.WriteLine(statement);
 		}
 		Console.WriteLine();
 	}

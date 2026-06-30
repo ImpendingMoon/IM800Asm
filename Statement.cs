@@ -44,12 +44,11 @@ internal class DirectiveStatement : Statement
 	public Constants.Directive Directive { get; set; }
 }
 
-internal class ExpressionStatement : Statement
+internal class EndOfFileStatement : Statement
 {
-	public ExpressionStatement(List<Token> tokens)
+	public EndOfFileStatement(int line, int column)
 	{
-		ExpressionTokens = tokens;
+		Line = line;
+		Column = column;
 	}
-
-	public List<Token> ExpressionTokens { get; set; }
 }

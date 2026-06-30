@@ -50,20 +50,6 @@ internal static class Constants
 		EndOfFile,
 	}
 
-
-	public enum OperandType
-	{
-		Unknown = 0,
-		Register,
-		Expression,
-		IndirectRegister,
-		IndirectExpression,
-		Indexed,
-		Condition,
-		BlockOperand,
-		Size,
-	}
-
 	public enum Instruction
 	{
 		LD, EX, PUSH, POP, LEA, EXH, EXA, EXX, EXI, IN, OUT,
@@ -93,7 +79,7 @@ internal static class Constants
 		NZ, Z, NC, C, PO, PE, P, M,
 	}
 
-	public enum BlockOperand
+	public enum Block
 	{
 		D, I,
 		S, R,
