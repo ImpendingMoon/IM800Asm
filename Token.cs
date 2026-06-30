@@ -1,71 +1,81 @@
-﻿namespace IM800Asm;
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace IM800Asm;
 
 internal class Token
 {
-	public Token(int line, int column, Constants.TokenType type)
+	public int Line { get; set; }
+	public int Column { get; set; }
+}
+
+internal class SymbolToken : Token
+{
+	public SymbolToken(int line, int column, Constants.TokenType type)
 	{
 		Line = line;
 		Column = column;
 		Type = type;
-		Lexeme = string.Empty;
-		StringValue = [];
 	}
 
-	public Token(int line, int column, Constants.TokenType type, string text)
+	public Constants.TokenType Type { get; set; }
+
+	public override string ToString()
 	{
-		Line = line;
-		Column = column;
-		Type = type;
-		Lexeme = text;
-		StringValue = [];
+		return $"{Line}:{Column}:\tSymbol: {Type}";
 	}
+}
 
-	public Token(int line, int column, Constants.TokenType type, string lexeme, long value)
+internal class IdentifierToken : Token
+{
+	public IdentifierToken(int line, int column, string lexeme)
 	{
 		Line = line;
 		Column = column;
 		Lexeme = lexeme;
-		Type = type;
-		Value = value;
-		StringValue = [];
 	}
 
-	public Token(int line, int column, Constants.TokenType type, string text, List<byte> stringValue)
+	public string Lexeme { get; set; }
+
+	public override string ToString()
+	{
+		return $"{Line}:{Column}:\tIdentifier: {Lexeme}";
+	}
+}
+
+internal class NumberToken : Token
+{
+	public NumberToken(int line, int column, string lexeme, long value)
 	{
 		Line = line;
 		Column = column;
-		Lexeme = text;
-		Type = type;
-		StringValue = stringValue;
+		Lexeme = lexeme;
+		Value = value;
 	}
 
-	public Constants.TokenType Type { get; set; }
-	public int Line { get; set; }
-	public int Column { get; set; }
-
-	/// <summary>
-	/// Raw text from the source code
-	/// </summary>
 	public string Lexeme { get; set; }
-
-	/// <summary>
-	/// Value of a string literal
-	/// </summary>
-	public List<byte> StringValue { get; set; }
-
-	/// <summary>
-	/// Value of a numeric literal
-	/// </summary>
 	public long Value { get; set; }
 
 	public override string ToString()
 	{
-		return Type switch
-		{
-			Constants.TokenType.Identifier => $"{Line}:{Column}:\t{Type}: Lexeme: {Lexeme}",
-			Constants.TokenType.String => $"{Line}:{Column}:\t{Type}: Text: {Lexeme}",
-			Constants.TokenType.Number => $"{Line}:{Column}:\t{Type}: Lexeme: {Lexeme}, Value: 0x{Value:X}",
-			_ => $"{Line}:{Column}:\t{Type}",
-		};
+		return $"{Line}:{Column}:\tNumber: {Lexeme} (0x{Value:X})";
+	}
+}
+
+internal class StringToken : Token
+{
+	public StringToken(int line, int column, string lexeme, List<byte> stringData)
+	{
+		Line = line;
+		Column = column;
+		Lexeme = lexeme;
+		StringData = stringData;
+	}
+
+	public string Lexeme { get; set; }
+	public List<byte> StringData { get; set; }
+
+	public override string ToString()
+	{
+		return $"{Line}:{Column}:\tString: {Lexeme}";
 	}
 }

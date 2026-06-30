@@ -21,10 +21,6 @@ internal static class Constants
 
 	public enum TokenType
 	{
-		Unknown = 0,
-		Identifier,
-		Number,
-		String,
 		Colon,
 		Comma,
 		LParen,
@@ -54,13 +50,6 @@ internal static class Constants
 		EndOfFile,
 	}
 
-	public enum StatementType
-	{
-		LabelDeclaration,
-		Instruction,
-		Directive,
-		EndOfFile,
-	}
 
 	public enum OperandType
 	{

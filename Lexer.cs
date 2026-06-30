@@ -30,7 +30,7 @@ internal class Lexer
 			{
 				_tokens.Add(tokenResult.ResultObject);
 
-				if (tokenResult.ResultObject.Type == Constants.TokenType.EndOfFile)
+				if (tokenResult.ResultObject is SymbolToken t && t.Type == Constants.TokenType.EndOfFile)
 				{
 					break;
 				}
@@ -50,16 +50,20 @@ internal class Lexer
 
 		if (c == '\0')
 		{
-			Token token = new(_line, _column, Constants.TokenType.EndOfFile);
+			SymbolToken token = new(_line, _column, Constants.TokenType.EndOfFile);
 			result.ResultObject = token;
 		}
 		else if (IsNewLine(c))
 		{
-			Token token = new(_line, _column, Constants.TokenType.NewLine);
+			SymbolToken token = new(_line, _column, Constants.TokenType.NewLine);
 			ConsumeNewLine();
 
-			// Don't care about repeated newlines, messy in the parser
-			if (_tokens.Count > 0 && _tokens[^1].Type != Constants.TokenType.NewLine)
+			// Don't care about repeated newlines
+			if (
+				_tokens.Count > 0
+				&& _tokens[^1] is SymbolToken t
+				&& t.Type != Constants.TokenType.NewLine
+			)
 			{
 				result.ResultObject = token;
 			}
@@ -69,30 +73,30 @@ internal class Lexer
 			SkipToNewLine();
 			// Leave null, end may be newline or end of file, next call to NextToken will catch
 		}
-		else if (TryParseOperator(out Token? operatorToken))
+		else if (TryParseSymbol(out SymbolToken? symbolToken))
 		{
-			Debug.Assert(operatorToken is not null);
-			result.ResultObject = operatorToken;
+			Debug.Assert(symbolToken is not null);
+			result.ResultObject = symbolToken;
 		}
-		else if (TryParseCharLiteral(out Result<Token?> charResult))
+		else if (TryParseCharLiteral(out Result<NumberToken?> charResult))
 		{
 			Debug.Assert(charResult.ResultObject is not null);
 			result.Combine(charResult);
 			result.ResultObject = charResult.ResultObject;
 		}
-		else if (TryParseStringLiteral(out Result<Token?> stringResult))
+		else if (TryParseStringLiteral(out Result<StringToken?> stringResult))
 		{
 			Debug.Assert(stringResult.ResultObject is not null);
 			result.Combine(stringResult);
 			result.ResultObject = stringResult.ResultObject;
 		}
-		else if (TryParseNumberLiteral(out Result<Token?> numberResult))
+		else if (TryParseNumberLiteral(out Result<NumberToken?> numberResult))
 		{
 			Debug.Assert(numberResult.ResultObject is not null);
 			result.Combine(numberResult);
 			result.ResultObject = numberResult.ResultObject;
 		}
-		else if (TryParseIdentifier(out Result<Token?> identifierResult))
+		else if (TryParseIdentifier(out Result<IdentifierToken?> identifierResult))
 		{
 			Debug.Assert(identifierResult.ResultObject is not null);
 			result.Combine(identifierResult);
@@ -134,7 +138,7 @@ internal class Lexer
 		}
 	}
 
-	private bool TryParseOperator(out Token? token)
+	private bool TryParseSymbol(out SymbolToken? token)
 	{
 		token = null;
 
@@ -147,27 +151,27 @@ internal class Lexer
 		switch ((c, n))
 		{
 			case ('<', '<'):
-				token = new(_line, _column, Constants.TokenType.ShiftLeft, "<<");
+				token = new(_line, _column, Constants.TokenType.ShiftLeft);
 				matchedTwo = true;
 				break;
 			case ('>', '>'):
-				token = new(_line, _column, Constants.TokenType.ShiftRight, ">>");
+				token = new(_line, _column, Constants.TokenType.ShiftRight);
 				matchedTwo = true;
 				break;
 			case ('=', '='):
-				token = new(_line, _column, Constants.TokenType.Equal, "==");
+				token = new(_line, _column, Constants.TokenType.Equal);
 				matchedTwo = true;
 				break;
 			case ('!', '='):
-				token = new(_line, _column, Constants.TokenType.NotEqual, "!=");
+				token = new(_line, _column, Constants.TokenType.NotEqual);
 				matchedTwo = true;
 				break;
 			case ('>', '='):
-				token = new(_line, _column, Constants.TokenType.GreaterEqual, ">=");
+				token = new(_line, _column, Constants.TokenType.GreaterEqual);
 				matchedTwo = true;
 				break;
 			case ('<', '='):
-				token = new(_line, _column, Constants.TokenType.LessEqual, "<=");
+				token = new(_line, _column, Constants.TokenType.LessEqual);
 				matchedTwo = true;
 				break;
 		}
@@ -183,79 +187,79 @@ internal class Lexer
 		switch (c)
 		{
 			case ',':
-				token = new(_line, _column, Constants.TokenType.Comma, ",");
+				token = new(_line, _column, Constants.TokenType.Comma);
 				matchedOne = true;
 				break;
 			case ':':
-				token = new(_line, _column, Constants.TokenType.Colon, ":");
+				token = new(_line, _column, Constants.TokenType.Colon);
 				matchedOne = true;
 				break;
 			case '(':
-				token = new(_line, _column, Constants.TokenType.LParen, "(");
+				token = new(_line, _column, Constants.TokenType.LParen);
 				matchedOne = true;
 				break;
 			case ')':
-				token = new(_line, _column, Constants.TokenType.RParen, ")");
+				token = new(_line, _column, Constants.TokenType.RParen);
 				matchedOne = true;
 				break;
 			case '[':
-				token = new(_line, _column, Constants.TokenType.LBracket, "[");
+				token = new(_line, _column, Constants.TokenType.LBracket);
 				matchedOne = true;
 				break;
 			case ']':
-				token = new(_line, _column, Constants.TokenType.RBracket, "]");
+				token = new(_line, _column, Constants.TokenType.RBracket);
 				matchedOne = true;
 				break;
 			case '+':
-				token = new(_line, _column, Constants.TokenType.Plus, "+");
+				token = new(_line, _column, Constants.TokenType.Plus);
 				matchedOne = true;
 				break;
 			case '-':
-				token = new(_line, _column, Constants.TokenType.Minus, "-");
+				token = new(_line, _column, Constants.TokenType.Minus);
 				matchedOne = true;
 				break;
 			case '*':
-				token = new(_line, _column, Constants.TokenType.Star, "*");
+				token = new(_line, _column, Constants.TokenType.Star);
 				matchedOne = true;
 				break;
 			case '/':
-				token = new(_line, _column, Constants.TokenType.Slash, "/");
+				token = new(_line, _column, Constants.TokenType.Slash);
 				matchedOne = true;
 				break;
 			case '%':
-				token = new(_line, _column, Constants.TokenType.Percent, "%");
+				token = new(_line, _column, Constants.TokenType.Percent);
 				matchedOne = true;
 				break;
 			case '&':
-				token = new(_line, _column, Constants.TokenType.Ampersand, "&");
+				token = new(_line, _column, Constants.TokenType.Ampersand);
 				matchedOne = true;
 				break;
 			case '|':
-				token = new(_line, _column, Constants.TokenType.Pipe, "|");
+				token = new(_line, _column, Constants.TokenType.Pipe);
 				matchedOne = true;
 				break;
 			case '^':
-				token = new(_line, _column, Constants.TokenType.Caret, "^");
+				token = new(_line, _column, Constants.TokenType.Caret);
 				matchedOne = true;
 				break;
 			case '~':
-				token = new(_line, _column, Constants.TokenType.Tilde, "~");
+				token = new(_line, _column, Constants.TokenType.Tilde);
 				matchedOne = true;
 				break;
 			case '>':
-				token = new(_line, _column, Constants.TokenType.Greater, ">");
+				token = new(_line, _column, Constants.TokenType.Greater);
 				matchedOne = true;
 				break;
 			case '<':
-				token = new(_line, _column, Constants.TokenType.Less, "<");
+				token = new(_line, _column, Constants.TokenType.Less);
 				matchedOne = true;
 				break;
 			case '!':
-				token = new(_line, _column, Constants.TokenType.Exclamation, "!");
+				token = new(_line, _column, Constants.TokenType.Exclamation);
 				matchedOne = true;
 				break;
 			case '$':
-				token = new(_line, _column, Constants.TokenType.Dollar, "$");
+				token = new(_line, _column, Constants.TokenType.Dollar);
 				matchedOne = true;
 				break;
 		}
@@ -269,7 +273,7 @@ internal class Lexer
 		return false;
 	}
 
-	private bool TryParseCharLiteral(out Result<Token?> result)
+	private bool TryParseCharLiteral(out Result<NumberToken?> result)
 	{
 		result = new(null);
 
@@ -289,7 +293,7 @@ internal class Lexer
 		if (c == '\'')
 		{
 			result.AddError("Lexer", $"{_line}:{_column}:\texpected character in character literal");
-			result.ResultObject = new(_line, _column, Constants.TokenType.Number, "''", 0);
+			result.ResultObject = new(_line, _column, "''", 0);
 			Advance();
 		}
 		else
@@ -311,7 +315,6 @@ internal class Lexer
 			result.ResultObject = new(
 				_line,
 				startColumn,
-				Constants.TokenType.Number,
 				_source[start.._position],
 				parseResult.ResultObject
 			);
@@ -320,7 +323,7 @@ internal class Lexer
 		return true;
 	}
 
-	private bool TryParseStringLiteral(out Result<Token?> result)
+	private bool TryParseStringLiteral(out Result<StringToken?> result)
 	{
 		result = new(null);
 
@@ -369,10 +372,9 @@ internal class Lexer
 			Advance();
 		}
 
-		result.ResultObject = new Token(
+		result.ResultObject = new(
 			_line,
 			startColumn,
-			Constants.TokenType.String,
 			_source[start.._position],
 			stringValue
 		);
@@ -380,7 +382,7 @@ internal class Lexer
 		return true;
 	}
 
-	private bool TryParseNumberLiteral(out Result<Token?> result)
+	private bool TryParseNumberLiteral(out Result<NumberToken?> result)
 	{
 		result = new(null);
 
@@ -453,12 +455,12 @@ internal class Lexer
 			result.AddError("Lexer", $"{_line}:{startColumn}:\tinvalid number literal \"{lexeme}\"");
 		}
 
-		result.ResultObject = new(_line, startColumn, Constants.TokenType.Number, lexeme, value);
+		result.ResultObject = new(_line, startColumn, lexeme, value);
 
 		return true;
 	}
 
-	private bool TryParseIdentifier(out Result<Token?> result)
+	private bool TryParseIdentifier(out Result<IdentifierToken?> result)
 	{
 		result = new(null);
 
@@ -478,7 +480,7 @@ internal class Lexer
 			c = Current();
 		}
 
-		result.ResultObject = new(_line, startColumn, Constants.TokenType.Identifier, _source[start.._position]);
+		result.ResultObject = new(_line, startColumn, _source[start.._position]);
 
 		return true;
 	}
