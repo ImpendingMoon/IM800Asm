@@ -30,6 +30,7 @@ internal class InstructionStatement : Statement
 
 	public Constants.Instruction Instruction { get; set; }
 	public Constants.Size? Size { get; set; }
+	public List<Operand> Operands { get; set; } = [];
 }
 
 internal class DirectiveStatement : Statement
@@ -42,6 +43,7 @@ internal class DirectiveStatement : Statement
 	}
 
 	public Constants.Directive Directive { get; set; }
+	public List<Operand> Operands { get; set; } = [];
 }
 
 internal class EndOfFileStatement : Statement

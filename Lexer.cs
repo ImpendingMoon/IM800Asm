@@ -57,16 +57,7 @@ internal class Lexer
 		{
 			SymbolToken token = new(_line, _column, Constants.TokenType.NewLine);
 			ConsumeNewLine();
-
-			// Don't care about repeated newlines
-			if (
-				_tokens.Count > 0
-				&& _tokens[^1] is SymbolToken t
-				&& t.Type != Constants.TokenType.NewLine
-			)
-			{
-				result.ResultObject = token;
-			}
+			result.ResultObject = token;
 		}
 		else if (c == Constants.CommentChar)
 		{
