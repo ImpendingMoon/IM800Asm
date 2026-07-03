@@ -69,4 +69,215 @@ internal class Assembler
 
 		return result;
 	}
+
+	/// <summary>
+	/// Defines a symbol if it's not already defined
+	/// </summary>
+	/// <param name="symbol">Symbol name. Will be expanded to fully qualified name.</param>
+	/// <param name="value"></param>
+	/// <returns>true if successful, false if symbol is already defined</returns>
+	private bool TryDefineSymbol(string symbol, long value)
+	{
+		string qualifiedName = GetQualifiedName(symbol);
+
+		if (_symbolTable.ContainsKey(qualifiedName))
+		{
+			return false;
+		}
+
+		_symbolTable[qualifiedName] = value;
+		return true;
+	}
+
+	/// <summary>
+	/// Defines or redefines a symbol. Used by .EQU.
+	/// </summary>
+	/// <param name="symbol">Symbol name. Will be expanded to fully qualified name.</param>
+	/// <param name="value"></param>
+	private void ForceDefineSymbol(string symbol, long value)
+	{
+		string qualifiedName = GetQualifiedName(symbol);
+		_symbolTable[qualifiedName] = value;
+	}
+
+	/// <summary>
+	/// Gets a symbol's value
+	/// </summary>
+	/// <param name="symbol">Symbol name. Will be expanded to fully qualified name.</param>
+	/// <returns>value, or null if not found</returns>
+	private long? GetSymbol(string symbol)
+	{
+		string qualifiedName = GetQualifiedName(symbol);
+
+		if (!_symbolTable.ContainsKey(qualifiedName))
+		{
+			return null;
+		}
+
+		return _symbolTable[qualifiedName];
+	}
+
+	/// <summary>
+	/// Gets a symbol's qualified name. Either the symbol itself, or the current scope + local label name
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <returns></returns>
+	private string GetQualifiedName(string symbol)
+	{
+		if (symbol.StartsWith('.'))
+		{
+			return _currentScope + symbol;
+		}
+
+		return symbol;
+	}
+
+	private Result<int> MeasureFormatR(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<int> result = new(0);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<List<byte>> EmitFormatR(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<List<byte>> result = new([]);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<int> MeasureFormatRM(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<int> result = new(0);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<List<byte>> EmitFormatRM(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<List<byte>> result = new([]);
+
+		// TODO
+
+		return result;
+	}
+
+
+	private Result<int> MeasureFormatUR(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<int> result = new(0);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<List<byte>> EmitFormatUR(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<List<byte>> result = new([]);
+
+		// TODO
+
+		return result;
+	}
+
+
+	private Result<int> MeasureFormatUM(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<int> result = new(0);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<List<byte>> EmitFormatUM(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<List<byte>> result = new([]);
+
+		// TODO
+
+		return result;
+	}
+
+
+	private Result<int> MeasureFormatB(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<int> result = new(0);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<List<byte>> EmitFormatB(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<List<byte>> result = new([]);
+
+		// TODO
+
+		return result;
+	}
+
+
+	private Result<int> MeasureFormatM(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<int> result = new(0);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<List<byte>> EmitFormatM(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<List<byte>> result = new([]);
+
+		// TODO
+
+		return result;
+	}
+
+
+	private Result<int> MeasureFormatSB(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<int> result = new(0);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<List<byte>> EmitFormatSB(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<List<byte>> result = new([]);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<int> MeasureFormatBLK(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<int> result = new(0);
+
+		// TODO
+
+		return result;
+	}
+
+	private Result<List<byte>> EmitFormatBLK(InstructionStatement statement, InstructionTable.Entry entry)
+	{
+		Result<List<byte>> result = new([]);
+
+		// TODO
+
+		return result;
+	}
 }

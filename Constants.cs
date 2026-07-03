@@ -19,8 +19,13 @@ internal static class Constants
 	public const char StringDelim = '"';
 	public const char SizeSeparator = '.';
 
+	public const string ModuloAlias = "MOD";
+	public const string ShiftLeftAlias = "SHL";
+	public const string ShiftRightAlias = "SHR";
+
 	public enum TokenType
 	{
+		Unknown = 0,
 		Colon,
 		Comma,
 		LParen,
@@ -111,8 +116,6 @@ internal static class Constants
 		// Accepts a size operand or the 1, 2, 4, or 8 number literals
 		Size,
 	}
-
-
 
 	public enum InstructionFormat
 	{

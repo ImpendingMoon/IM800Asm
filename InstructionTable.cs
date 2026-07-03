@@ -7,13 +7,14 @@ internal class InstructionTable
 	// Size (as in size field)
 	// Format (switches what measure/emit functions are used)
 	// Operands
+	// allowed sizes
 	// allow mixed size (property or just in the measure/emit. probably property since many instructions allow)
 	// base address
 	// length in bytes
 	// maybe could just be in the statements class?
-	// let's just use that for now
+	// but it's a lot of new information that could be stored separately
 
-	public bool TryResolveInstruction(ref InstructionStatement statement, out Entry? resolvedEntry)
+	public static bool TryResolveInstruction(InstructionStatement statement, out Entry? resolvedEntry)
 	{
 		resolvedEntry = null;
 

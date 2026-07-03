@@ -29,6 +29,7 @@ internal class Program
 
 		Result result = new();
 
+		// Temporary driver while I develop the thing
 		Lexer lexer = new(source);
 
 		Result<List<Token>> tokenizeResult = lexer.Tokenize();
@@ -65,8 +66,21 @@ internal class Program
 		foreach (Statement statement in parseResult.ResultObject)
 		{
 			Console.WriteLine(statement);
+
+			if (statement is InstructionStatement instruction)
+			{
+				InstructionTable.TryResolveInstruction(instruction, out InstructionTable.Entry? entry);
+
+				if (entry is not null)
+				{
+					Console.WriteLine($"Matched as format {entry.InstructionFormat} with opcode 0b{entry.Opcode:b} and function 0b{entry.Function:b}");
+				}
+				else
+				{
+					Console.WriteLine($"Did not match to an instruction!");
+				}
+			}
 		}
 		Console.WriteLine();
 	}
 }
-
