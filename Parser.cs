@@ -255,7 +255,7 @@ internal class Parser
 
 		foreach (byte b in token.StringData)
 		{
-			NumberToken byteToken = new(token.Line, token.Column, token.Lexeme, b);
+			NumberToken byteToken = new(token.Line, token.Column, b.ToString(), b);
 			operands.Add(new ExpressionOperand(token.Line, token.Column, [byteToken]));
 		}
 

@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace IM800Asm;
 
 internal class Operand
@@ -16,6 +18,11 @@ internal class RegisterOperand : Operand
 	}
 
 	public Constants.Register Register { get; set; }
+
+	public override string ToString()
+	{
+		return Register.ToString();
+	}
 }
 
 internal class ExpressionOperand : Operand
@@ -28,6 +35,18 @@ internal class ExpressionOperand : Operand
 	}
 
 	public List<Token> ExpressionTokens { get; set; }
+
+	public override string ToString()
+	{
+		StringBuilder sb = new();
+
+		foreach (Token token in ExpressionTokens)
+		{
+			sb.Append(token.ToShortString());
+		}
+
+		return sb.ToString();
+	}
 }
 
 internal class IndirectRegisterOperand : Operand
@@ -40,6 +59,11 @@ internal class IndirectRegisterOperand : Operand
 	}
 
 	public Constants.Register Register { get; set; }
+
+	public override string ToString()
+	{
+		return $"[{Register}]";
+	}
 }
 
 internal class IndirectExpressionOperand : Operand
@@ -52,6 +76,22 @@ internal class IndirectExpressionOperand : Operand
 	}
 
 	public List<Token> ExpressionTokens { get; set; }
+
+	public override string ToString()
+	{
+		StringBuilder sb = new();
+
+		sb.Append('[');
+
+		foreach (Token token in ExpressionTokens)
+		{
+			sb.Append(token.ToShortString());
+		}
+
+		sb.Append(']');
+
+		return sb.ToString();
+	}
 }
 
 internal class IndexedOperand : Operand
@@ -66,6 +106,23 @@ internal class IndexedOperand : Operand
 
 	public Constants.Register Register { get; set; }
 	public List<Token> ExpressionTokens { get; set; }
+
+	public override string ToString()
+	{
+		StringBuilder sb = new();
+
+		sb.Append('[');
+		sb.Append(Register.ToString());
+
+		foreach (Token token in ExpressionTokens)
+		{
+			sb.Append(token.ToShortString());
+		}
+
+		sb.Append(']');
+
+		return sb.ToString();
+	}
 }
 
 internal class ConditionOperand : Operand
@@ -78,6 +135,11 @@ internal class ConditionOperand : Operand
 	}
 
 	public Constants.Condition Condition { get; set; }
+
+	public override string ToString()
+	{
+		return Condition.ToString();
+	}
 }
 
 internal class BlockOperand : Operand
@@ -90,6 +152,11 @@ internal class BlockOperand : Operand
 	}
 
 	public Constants.Block Block { get; set; }
+
+	public override string ToString()
+	{
+		return Block.ToString();
+	}
 }
 
 internal class SizeOperand : Operand
@@ -102,4 +169,9 @@ internal class SizeOperand : Operand
 	}
 
 	public Constants.Size Size { get; set; }
+
+	public override string ToString()
+	{
+		return Size.ToString();
+	}
 }
