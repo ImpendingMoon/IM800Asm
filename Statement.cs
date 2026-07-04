@@ -6,6 +6,11 @@ internal class Statement
 {
 	public int Line { get; set; }
 	public int Column { get; set; }
+
+	// Used for listing files
+	public long BaseLocationCounter { get; set; }
+	public long FileOffsetCounter { get; set; }
+	public int Length { get; set; }
 }
 
 internal class LabelStatement : Statement
