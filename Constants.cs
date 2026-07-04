@@ -92,7 +92,7 @@ internal static class Constants
 
 	public enum Size
 	{
-		Byte, Word, Dword, Qword,
+		Unsized = 0, Byte, Word, Dword, Qword,
 	}
 
 	public enum AcceptedOperandType
