@@ -145,6 +145,43 @@ internal class InstructionTable
 		];
 	}
 
+	private static List<Entry> MakeStandardBLKEntries(int opcode, int function)
+	{
+		return [
+		new Entry(
+				[
+					new OperandSlot(Constants.AcceptedOperandType.Block),
+					new OperandSlot(Constants.AcceptedOperandType.Block),
+					new OperandSlot(Constants.AcceptedOperandType.Size),
+				],
+				Constants.InstructionFormat.BLK,
+				[
+					Constants.Size.Unsized, // Size is selected with a dedicated operand
+				],
+				Constants.Size.Unsized,
+				opcode,
+				function
+			),
+		];
+	}
+
+	private static List<Entry> MakeStandardMEntries(int opcode, int function, Constants.Size size)
+	{
+		return [
+			new Entry(
+				[
+				],
+				Constants.InstructionFormat.M,
+				[
+					size,
+				],
+				size,
+				opcode,
+				function
+			)
+		];
+	}
+
 	private static readonly Dictionary<Constants.Instruction, List<Entry>> _instructionTable = new()
 	{
 		// R/RM
@@ -704,71 +741,11 @@ internal class InstructionTable
 			),
 		],
 		// M
-		[Constants.Instruction.SCF] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized, // SCF.B or SCF.W makes no sense
-				],
-				Constants.Size.Unsized,
-				0b0000,
-				0b00000000
-			),
-		],
-		[Constants.Instruction.CCF] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0000,
-				0b00000001
-			),
-		],
-		[Constants.Instruction.DAA] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Byte, // But I suppose DAA.B makes sense even if it will only ever work on bytes
-				],
-				Constants.Size.Byte,
-				0b0000,
-				0b00000010
-			),
-		],
-		[Constants.Instruction.RLD] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Byte,
-				],
-				Constants.Size.Byte,
-				0b0000,
-				0b00000011
-			),
-		],
-		[Constants.Instruction.RRD] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Byte,
-				],
-				Constants.Size.Byte,
-				0b0000,
-				0b00000100
-			),
-		],
+		[Constants.Instruction.SCF] = MakeStandardMEntries(0b0000, 0b00000000, Constants.Size.Unsized),
+		[Constants.Instruction.CCF] = MakeStandardMEntries(0b0000, 0b00000001, Constants.Size.Unsized),
+		[Constants.Instruction.DAA] = MakeStandardMEntries(0b0000, 0b00000010, Constants.Size.Byte),
+		[Constants.Instruction.RLD] = MakeStandardMEntries(0b0000, 0b00000011, Constants.Size.Byte),
+		[Constants.Instruction.RRD] = MakeStandardMEntries(0b0000, 0b00000100, Constants.Size.Byte),
 		[Constants.Instruction.RST] = [
 			new Entry(
 				[
@@ -776,118 +753,21 @@ internal class InstructionTable
 				],
 				Constants.InstructionFormat.M,
 				[
-					Constants.Size.Byte,
+					Constants.Size.Unsized,
 				],
-				Constants.Size.Byte,
+				Constants.Size.Unsized,
 				0b0000,
 				0b00000101
 			),
 		],
-		[Constants.Instruction.EXX] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0001,
-				0b00000000
-			),
-		],
-		[Constants.Instruction.EXI] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0001,
-				0b00000001
-			),
-		],
-		[Constants.Instruction.EI] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0001,
-				0b00000010
-			),
-		],
-		[Constants.Instruction.DI] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0001,
-				0b00000011
-			),
-		],
-		[Constants.Instruction.IM] = [
-			new Entry(
-				[
-					new OperandSlot(Constants.AcceptedOperandType.Immediate),
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0001,
-				0b00000100
-			),
-		],
-		[Constants.Instruction.RETI] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0001,
-				0b00000111
-			),
-		],
-		[Constants.Instruction.RETN] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0001,
-				0b00001000
-			),
-		],
-		[Constants.Instruction.HALT] = [
-			new Entry(
-				[
-				],
-				Constants.InstructionFormat.M,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0001,
-				0b00001001
-			),
-		],
+		[Constants.Instruction.EXX] = MakeStandardMEntries(0b0001, 0b00000000, Constants.Size.Unsized),
+		[Constants.Instruction.EXI] = MakeStandardMEntries(0b0001, 0b00000001, Constants.Size.Unsized),
+		[Constants.Instruction.EI] = MakeStandardMEntries(0b0001, 0b00000010, Constants.Size.Unsized),
+		[Constants.Instruction.DI] = MakeStandardMEntries(0b0001, 0b00000011, Constants.Size.Unsized),
+		[Constants.Instruction.IM] = MakeStandardMEntries(0b0001, 0b00000100, Constants.Size.Unsized),
+		[Constants.Instruction.RETI] = MakeStandardMEntries(0b0001, 0b00000111, Constants.Size.Unsized),
+		[Constants.Instruction.RETN] = MakeStandardMEntries(0b0001, 0b00001000, Constants.Size.Unsized),
+		[Constants.Instruction.HALT] = MakeStandardMEntries(0b0001, 0b00001001, Constants.Size.Unsized),
 		// SB
 		[Constants.Instruction.NOP] = [
 			new Entry(
@@ -941,86 +821,11 @@ internal class InstructionTable
 			),
 		],
 		// BLK
-		[Constants.Instruction.BLD] = [
-			new Entry(
-				[
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Size),
-				],
-				Constants.InstructionFormat.BLK,
-				[
-					Constants.Size.Unsized, // Size is selected with a dedicated operand
-				],
-				Constants.Size.Unsized,
-				0b0000,
-				0b000
-			),
-		],
-		[Constants.Instruction.BCP] = [
-			new Entry(
-				[
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Size),
-				],
-				Constants.InstructionFormat.BLK,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0000,
-				0b001
-			),
-		],
-		[Constants.Instruction.BTST] = [
-			new Entry(
-				[
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Size),
-				],
-				Constants.InstructionFormat.BLK,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0000,
-				0b010
-			),
-		],
-		[Constants.Instruction.BIN] = [
-			new Entry(
-				[
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Size),
-				],
-				Constants.InstructionFormat.BLK,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0000,
-				0b011
-			),
-		],
-		[Constants.Instruction.BOUT] = [
-			new Entry(
-				[
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Block),
-					new OperandSlot(Constants.AcceptedOperandType.Size),
-				],
-				Constants.InstructionFormat.BLK,
-				[
-					Constants.Size.Unsized,
-				],
-				Constants.Size.Unsized,
-				0b0000,
-				0b100
-			),
-		],
+		[Constants.Instruction.BLD] = MakeStandardBLKEntries(0b0000, 0b000),
+		[Constants.Instruction.BCP] = MakeStandardBLKEntries(0b0000, 0b001),
+		[Constants.Instruction.BTST] = MakeStandardBLKEntries(0b0000, 0b010),
+		[Constants.Instruction.BIN] = MakeStandardBLKEntries(0b0000, 0b011),
+		[Constants.Instruction.BOUT] = MakeStandardBLKEntries(0b0000, 0b100),
 	};
 
 	public class Entry

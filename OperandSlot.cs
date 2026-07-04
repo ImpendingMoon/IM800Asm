@@ -22,15 +22,15 @@ internal class OperandSlot
 		{
 			Constants.AcceptedOperandType.AnyRegister =>
 				operand is RegisterOperand ro &&
-				AnyRegisterValues.Contains(ro.Register),
+				Constants.AnyRegisterValues.Contains(ro.Register),
 
 			Constants.AcceptedOperandType.NarrowRegister =>
 				operand is RegisterOperand ro &&
-				NarrowRegisterValues.Contains(ro.Register),
+				Constants.NarrowRegisterValues.Contains(ro.Register),
 
 			Constants.AcceptedOperandType.WideRegister =>
 				operand is RegisterOperand ro &&
-				WideRegisterValues.Contains(ro.Register),
+				Constants.WideRegisterValues.Contains(ro.Register),
 
 			Constants.AcceptedOperandType.ExactRegister =>
 				operand is RegisterOperand ro &&
@@ -75,40 +75,5 @@ internal class OperandSlot
 	}
 
 
-	private static readonly HashSet<Constants.Register> AnyRegisterValues = [
-		Constants.Register.A,
-		Constants.Register.B,
-		Constants.Register.C,
-		Constants.Register.D,
-		Constants.Register.E,
-		Constants.Register.H,
-		Constants.Register.L,
-		Constants.Register.AF,
-		Constants.Register.BC,
-		Constants.Register.DE,
-		Constants.Register.HL,
-		Constants.Register.IX,
-		Constants.Register.IY,
-		Constants.Register.SP,
-	];
 
-	private static readonly HashSet<Constants.Register> NarrowRegisterValues = [
-		Constants.Register.A,
-		Constants.Register.B,
-		Constants.Register.C,
-		Constants.Register.D,
-		Constants.Register.E,
-		Constants.Register.H,
-		Constants.Register.L,
-	];
-
-	private static readonly HashSet<Constants.Register> WideRegisterValues = [
-		Constants.Register.AF,
-		Constants.Register.BC,
-		Constants.Register.DE,
-		Constants.Register.HL,
-		Constants.Register.IX,
-		Constants.Register.IY,
-		Constants.Register.SP,
-	];
 }

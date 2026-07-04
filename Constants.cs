@@ -135,4 +135,43 @@ internal static class Constants
 		Signed,
 		Unsigned,
 	}
+
+	public static readonly HashSet<Register> AnyRegisterValues = [
+		Register.A,
+		Register.B,
+		Register.C,
+		Register.D,
+		Register.E,
+		Register.H,
+		Register.L,
+		Register.AF,
+		Register.BC,
+		Register.DE,
+		Register.HL,
+		Register.IX,
+		Register.IY,
+		Register.SP,
+	];
+
+	public static readonly HashSet<Register> NarrowRegisterValues = [
+		Register.A,
+		Register.B,
+		Register.C,
+		Register.D,
+		Register.E,
+		Register.H,
+		Register.L,
+		Register.R,
+	];
+
+	public static readonly HashSet<Register> WideRegisterValues = [
+		Register.AF,
+		Register.BC,
+		Register.DE,
+		Register.HL,
+		Register.IX,
+		Register.IY,
+		Register.SP,
+		Register.I,
+	];
 }
