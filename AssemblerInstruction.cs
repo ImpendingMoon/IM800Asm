@@ -6,7 +6,7 @@ internal partial class Assembler
 {
 	// ************* MEASURE *****************
 
-	private Result<long> MeasureFormatR(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureFormatR(InstructionStatement st, InstructionTable.Entry entry)
 	{
 		Debug.Assert(st.Operands.Count >= 2);
 
@@ -26,7 +26,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<long> MeasureFormatRM(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureFormatRM(InstructionStatement st, InstructionTable.Entry entry)
 	{
 		Debug.Assert(st.Operands.Count >= 2);
 
@@ -67,7 +67,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<long> MeasureFormatUR(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureFormatUR(InstructionStatement st, InstructionTable.Entry entry)
 	{
 		Result<long> result = new(2);
 
@@ -79,7 +79,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<long> MeasureFormatUM(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureFormatUM(InstructionStatement st, InstructionTable.Entry entry)
 	{
 		Debug.Assert(st.Operands.Count == 1);
 
@@ -105,7 +105,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<long> MeasureFormatB(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureFormatB(InstructionStatement st, InstructionTable.Entry entry)
 	{
 		Debug.Assert(st.Operands.Count >= 1);
 		Result<long> result = new(2);
@@ -127,7 +127,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<long> MeasureFormatM(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureFormatM(InstructionStatement st, InstructionTable.Entry entry)
 	{
 		Result<long> result = new(2);
 
@@ -153,7 +153,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<long> MeasureFormatSB(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureFormatSB(InstructionStatement st, InstructionTable.Entry entry)
 	{
 		Result<long> result = new(1);
 
@@ -170,7 +170,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<long> MeasureFormatBLK(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureFormatBLK(InstructionStatement st, InstructionTable.Entry entry)
 	{
 		Result<long> result = new(2);
 
@@ -258,7 +258,8 @@ internal partial class Assembler
 	{
 		Result<long> result = new(st.Length);
 
-		// TODO fix condition from register 
+		// TODO fix condition from register
+		// TODO have to calculate relative address from _locationCounter for JR, CR, revalidate range as signed
 
 		return result;
 	}
@@ -288,7 +289,9 @@ internal partial class Assembler
 		// TODO
 		// fix block operands from registers
 		// fix size from 1, 2, 4, 8 literals
-		// emit
+		// have to calculate relative address from _locationCounter for DJNZ, JAZ, JANZ, revalidate range as signed
+
+
 
 		return result;
 	}
@@ -564,7 +567,7 @@ internal partial class Assembler
 			}
 			case ExpressionOperand eo:
 			{
-				result = EncodeImmediateSource(st, eo, out immediateValue);
+				result = GetImmediateOperand(st, eo, out immediateValue);
 				break;
 			}
 			case IndirectRegisterOperand iro:
@@ -574,11 +577,12 @@ internal partial class Assembler
 			}
 			case IndirectExpressionOperand ieo:
 			{
-
+				result = GetDirectOperand(ieo, out immediateValue);
 				break;
 			}
 			case IndexedOperand idx:
 			{
+				result = GetIndexedOperand(idx, out displacementValue);
 				break;
 			}
 		}
@@ -586,7 +590,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<int> EncodeImmediateSource(
+	private Result<int> GetImmediateOperand(
 		InstructionStatement st,
 		ExpressionOperand operand,
 		out long? immediateValue
@@ -615,6 +619,41 @@ internal partial class Assembler
 		result.Combine(evalResult);
 
 		immediateValue = evalResult.ResultObject;
+
+		return result;
+	}
+
+	private Result<int> GetDirectOperand(IndirectExpressionOperand operand, out long? immediateValue)
+	{
+		Result<int> result = new(0b111);
+
+		Result<long> evalResult = _evaluator.Evaluate(
+			operand.ExpressionTokens,
+			_locationCounter,
+			Constants.Size.Dword,
+			Constants.Signedness.Unsigned
+		);
+
+		result.Combine(evalResult);
+
+		immediateValue = evalResult.ResultObject;
+
+		return result;
+	}
+
+	private Result<int> GetIndexedOperand(IndexedOperand operand, out long? displacementValue)
+	{
+		Result<int> result = new(GetRegisterSelectorBits(operand.Register));
+
+		Result<long> evalResult = _evaluator.Evaluate(
+			operand.ExpressionTokens,
+			_locationCounter,
+			Constants.Size.Word,
+			Constants.Signedness.Signed
+		);
+
+		result.Combine(evalResult);
+		displacementValue = evalResult.ResultObject;
 
 		return result;
 	}

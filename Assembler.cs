@@ -10,11 +10,6 @@ internal partial class Assembler
 	private List<Statement> _statements;
 
 	/// <summary>
-	/// Position in the statements list
-	/// </summary>
-	private int _position;
-
-	/// <summary>
 	/// Position in the assembled file
 	/// </summary>
 	private long _locationCounter;
@@ -41,7 +36,6 @@ internal partial class Assembler
 	public Assembler(List<Statement> statements)
 	{
 		_statements = statements;
-		_position = 0;
 		_locationCounter = 0;
 		_currentScope = string.Empty;
 		_symbolTable = [];
