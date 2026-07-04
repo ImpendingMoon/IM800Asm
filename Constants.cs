@@ -128,4 +128,11 @@ internal static class Constants
 		SB,
 		BLK,
 	}
+
+	public enum Signedness
+	{
+		Either,
+		Signed,
+		Unsigned,
+	}
 }

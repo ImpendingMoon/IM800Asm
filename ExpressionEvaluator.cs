@@ -1,27 +1,147 @@
+using System.Collections;
+
 namespace IM800Asm;
 
 internal class ExpressionEvaluator
 {
 	private List<Token> _tokens;
 	private Func<string, long?> _resolveSymbol;
-	private int _locationCounter;
+	private long _locationCounter;
 	private int _position;
 
-	public ExpressionEvaluator(List<Token> tokens, Func<string, long?> resolveSymbol, int locationCounter)
+	public ExpressionEvaluator(Func<string, long?> resolveSymbol)
 	{
-		_tokens = tokens;
+		_tokens = [];
 		_resolveSymbol = resolveSymbol;
-		_locationCounter = locationCounter;
+		_locationCounter = 0;
 		_position = 0;
 	}
 
-	public Result<long> Evaluate()
+	public Result<long> Evaluate(List<Token> tokens, long locationCounter, Constants.Size size, Constants.Signedness signed)
 	{
 		Result<long> result = new(0);
+
+		if (tokens.Count == 0)
+		{
+			throw new Exception("expected expression tokens count to be validated before evaluation");
+		}
+
+		_tokens = tokens;
+		_locationCounter = locationCounter;
+		_position = 0;
 
 		long value = ParseComparison(result);
 		result.ResultObject = value;
 
+		Token firstToken = tokens[0];
+		Result<long> rangeResult = ValidateTruncateRange(firstToken.Line, firstToken.Column, value, size, signed);
+		result.Combine(rangeResult);
+
+		return result;
+	}
+
+	private static Result<long> ValidateTruncateRange(
+		int line,
+		int column,
+		long value,
+		Constants.Size size,
+		Constants.Signedness signed
+	)
+	{
+		Result<long> result = new(0);
+
+		long min;
+		long max;
+		long truncated;
+
+		switch ((size, signed))
+		{
+			case (Constants.Size.Byte, Constants.Signedness.Either):
+			{
+				min = sbyte.MinValue;
+				max = byte.MaxValue;
+				truncated = (byte)value; // sign bits are still kept and truncated for assembled program
+				break;
+			}
+			case (Constants.Size.Byte, Constants.Signedness.Signed):
+			{
+				min = sbyte.MinValue;
+				max = sbyte.MaxValue;
+				truncated = (byte)value;
+				break;
+			}
+			case (Constants.Size.Byte, Constants.Signedness.Unsigned):
+			{
+				min = byte.MinValue;
+				max = byte.MaxValue;
+				truncated = (byte)value;
+				break;
+			}
+			case (Constants.Size.Word, Constants.Signedness.Either):
+			{
+				min = short.MinValue;
+				max = ushort.MaxValue;
+				truncated = (ushort)value;
+				break;
+			}
+			case (Constants.Size.Word, Constants.Signedness.Signed):
+			{
+				min = short.MinValue;
+				max = short.MaxValue;
+				truncated = (ushort)value;
+				break;
+			}
+			case (Constants.Size.Word, Constants.Signedness.Unsigned):
+			{
+				min = ushort.MinValue;
+				max = ushort.MaxValue;
+				truncated = (ushort)value;
+				break;
+			}
+			case (Constants.Size.Dword, Constants.Signedness.Either):
+			{
+				min = int.MinValue;
+				max = uint.MaxValue;
+				truncated = (uint)value;
+				break;
+			}
+			case (Constants.Size.Dword, Constants.Signedness.Signed):
+			{
+				min = int.MinValue;
+				max = int.MaxValue;
+				truncated = (uint)value;
+				break;
+			}
+			case (Constants.Size.Dword, Constants.Signedness.Unsigned):
+			{
+				min = uint.MinValue;
+				max = uint.MaxValue;
+				truncated = (uint)value;
+				break;
+			}
+			default:
+			{
+				min = long.MinValue;
+				max = long.MaxValue;
+				truncated = value;
+				break;
+			}
+		}
+
+		if (value < min || value > max)
+		{
+			string signedDisplay = signed switch
+			{
+				Constants.Signedness.Either => string.Empty,
+				Constants.Signedness.Signed => "Signed ",
+				Constants.Signedness.Unsigned => "Unsigned ",
+				_ => throw new Exception($"unknown signedness {signed}"),
+			};
+
+			result.AddWarning("Expression", $"{line}:{column}:\tvalue 0x{value:X} truncated to {signedDisplay}{size}");
+		}
+
+		result.ResultObject = truncated;
 		return result;
 	}
 
