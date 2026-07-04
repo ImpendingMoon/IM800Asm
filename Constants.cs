@@ -174,4 +174,17 @@ internal static class Constants
 		Register.SP,
 		Register.I,
 	];
+
+	public static readonly HashSet<Instruction> BitAndShiftInstructions = [
+		Instruction.BIT,
+		Instruction.SET,
+		Instruction.RES,
+		Instruction.RLC,
+		Instruction.RRC,
+		Instruction.RL,
+		Instruction.RR,
+		Instruction.SLA,
+		Instruction.SRA,
+		Instruction.SRL,
+	];
 }

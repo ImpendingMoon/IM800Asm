@@ -8,9 +8,8 @@ internal class Statement
 	public int Column { get; set; }
 
 	// Used for listing files
-	public long BaseLocationCounter { get; set; }
-	public long FileOffsetCounter { get; set; }
-	public int Length { get; set; }
+	public long FileOffset { get; set; }
+	public long Length { get; set; }
 }
 
 internal class LabelStatement : Statement
@@ -37,12 +36,18 @@ internal class InstructionStatement : Statement
 		Line = line;
 		Column = column;
 		Instruction = instruction;
-		Size = size;
+		ManualSize = size;
+		FinalSize = default;
 	}
 
 	public Constants.Instruction Instruction { get; set; }
-	public Constants.Size? Size { get; set; }
+	public Constants.Size? ManualSize { get; set; }
 	public List<Operand> Operands { get; set; } = [];
+
+	/// <summary>
+	/// Size as resolved by the Pass 1 Assembler
+	/// </summary>
+	public Constants.Size FinalSize { get; set; }
 
 	public override string ToString()
 	{
@@ -50,10 +55,10 @@ internal class InstructionStatement : Statement
 
 		sb.Append($"{Line}:{Column}: {Instruction}");
 
-		if (Size is not null)
+		if (ManualSize is not null)
 		{
 			sb.Append('.');
-			sb.Append(Size.ToString()![0]);
+			sb.Append(ManualSize.ToString()![0]);
 		}
 
 		sb.Append(' ');
