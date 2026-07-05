@@ -418,6 +418,12 @@ internal class Parser
 			&& Enum.TryParse(t.Lexeme, ignoreCase: true, out Constants.Size size)
 		)
 		{
+			// Internal enumeration used by the instruction table
+			if (size == Constants.Size.Unsized)
+			{
+				return false;
+			}
+
 			result.ResultObject = new SizeOperand(t.Line, t.Column, size);
 			Advance();
 			return true;

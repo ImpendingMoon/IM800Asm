@@ -23,6 +23,9 @@ internal static class Constants
 	public const string ShiftLeftAlias = "SHL";
 	public const string ShiftRightAlias = "SHR";
 
+	// Condition field encoding for an unconditional B instruction
+	public const int AlwaysConditionSelector = 0b1111;
+
 	public enum TokenType
 	{
 		Unknown = 0,
@@ -106,7 +109,7 @@ internal static class Constants
 		// Accepts only one register
 		ExactRegister,
 		// Accepts any of [rr], [rr+#], [#] (there are no instructions that only take a subset of these)
-		Indirect,
+		Memory,
 		// Accepts an expression
 		Immediate,
 		// Accepts a condition or the C register (fixed to Carry condition)

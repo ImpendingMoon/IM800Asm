@@ -63,7 +63,7 @@ internal class InstructionTable
 			new Entry(
 				[
 					new OperandSlot(Constants.AcceptedOperandType.AnyRegister),
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 				],
 				Constants.InstructionFormat.RM,
 				[
@@ -78,7 +78,7 @@ internal class InstructionTable
 			),
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 					new OperandSlot(Constants.AcceptedOperandType.AnyRegister),
 				],
 				Constants.InstructionFormat.RM,
@@ -94,7 +94,7 @@ internal class InstructionTable
 			),
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 					new OperandSlot(Constants.AcceptedOperandType.Immediate),
 				],
 				Constants.InstructionFormat.RM,
@@ -130,7 +130,7 @@ internal class InstructionTable
 			),
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 				],
 				Constants.InstructionFormat.UM,
 				[
@@ -246,7 +246,7 @@ internal class InstructionTable
 			new Entry(
 				[
 					new OperandSlot(Constants.AcceptedOperandType.AnyRegister),
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 				],
 				Constants.InstructionFormat.RM,
 				[
@@ -259,7 +259,7 @@ internal class InstructionTable
 			),
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 					new OperandSlot(Constants.AcceptedOperandType.AnyRegister),
 				],
 				Constants.InstructionFormat.RM,
@@ -276,7 +276,7 @@ internal class InstructionTable
 			new Entry(
 				[
 					new OperandSlot(Constants.AcceptedOperandType.AnyRegister),
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 				],
 				Constants.InstructionFormat.RM,
 				[
@@ -291,7 +291,7 @@ internal class InstructionTable
 		[Constants.Instruction.OUT] = [
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 					new OperandSlot(Constants.AcceptedOperandType.AnyRegister),
 				],
 				Constants.InstructionFormat.RM,
@@ -332,7 +332,22 @@ internal class InstructionTable
 			new Entry(
 				[
 					new OperandSlot(Constants.AcceptedOperandType.WideRegister),
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Immediate),
+					new OperandSlot(Constants.AcceptedOperandType.Size),
+				],
+				Constants.InstructionFormat.R,
+				[
+					Constants.Size.Dword,
+				],
+				Constants.Size.Dword,
+				0b10000,
+				0,
+				allowMixedSizes: true
+			),
+			new Entry(
+				[
+					new OperandSlot(Constants.AcceptedOperandType.WideRegister),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 					new OperandSlot(Constants.AcceptedOperandType.Size),
 				],
 				Constants.InstructionFormat.RM,
@@ -346,8 +361,23 @@ internal class InstructionTable
 			),
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 					new OperandSlot(Constants.AcceptedOperandType.NarrowRegister),
+					new OperandSlot(Constants.AcceptedOperandType.Size),
+				],
+				Constants.InstructionFormat.RM,
+				[
+					Constants.Size.Dword,
+				],
+				Constants.Size.Dword,
+				0b10000,
+				0,
+				allowMixedSizes: true
+			),
+			new Entry(
+				[
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
+					new OperandSlot(Constants.AcceptedOperandType.Immediate),
 					new OperandSlot(Constants.AcceptedOperandType.Size),
 				],
 				Constants.InstructionFormat.RM,
@@ -448,7 +478,7 @@ internal class InstructionTable
 			),
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 				],
 				Constants.InstructionFormat.UM,
 				[
@@ -476,7 +506,7 @@ internal class InstructionTable
 			),
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 				],
 				Constants.InstructionFormat.UM,
 				[
@@ -504,7 +534,7 @@ internal class InstructionTable
 			),
 			new Entry(
 				[
-					new OperandSlot(Constants.AcceptedOperandType.Indirect),
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
 				],
 				Constants.InstructionFormat.UM,
 				[
@@ -764,7 +794,20 @@ internal class InstructionTable
 		[Constants.Instruction.EXI] = MakeStandardMEntries(0b0001, 0b00000001, Constants.Size.Unsized),
 		[Constants.Instruction.EI] = MakeStandardMEntries(0b0001, 0b00000010, Constants.Size.Unsized),
 		[Constants.Instruction.DI] = MakeStandardMEntries(0b0001, 0b00000011, Constants.Size.Unsized),
-		[Constants.Instruction.IM] = MakeStandardMEntries(0b0001, 0b00000100, Constants.Size.Unsized),
+		[Constants.Instruction.IM] = [
+			new Entry(
+				[
+					new OperandSlot(Constants.AcceptedOperandType.Immediate),
+				],
+				Constants.InstructionFormat.M,
+				[
+					Constants.Size.Unsized,
+				],
+				Constants.Size.Unsized,
+				0b0001,
+				0b00000100
+			),
+		],
 		[Constants.Instruction.RETI] = MakeStandardMEntries(0b0001, 0b00000111, Constants.Size.Unsized),
 		[Constants.Instruction.RETN] = MakeStandardMEntries(0b0001, 0b00001000, Constants.Size.Unsized),
 		[Constants.Instruction.HALT] = MakeStandardMEntries(0b0001, 0b00001001, Constants.Size.Unsized),

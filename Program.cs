@@ -1,4 +1,6 @@
-﻿namespace IM800Asm;
+﻿using System.Diagnostics;
+
+namespace IM800Asm;
 
 internal class Program
 {
@@ -25,11 +27,24 @@ internal class Program
 			return;
 		}
 
+		string outputFilePath = args[1];
+		outputFilePath = outputFilePath.Trim('"');
+
+		if (outputFilePath.StartsWith('~'))
+		{
+			string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			outputFilePath = outputFilePath.Replace("~", userFolder);
+		}
+
+		Stopwatch stopwatch = new();
+		stopwatch.Start();
+
 		string source = File.ReadAllText(sourceFilePath);
 
 		Result result = new();
 
 		// Temporary driver while I develop the thing
+
 		Lexer lexer = new(source);
 
 		Result<List<Token>> tokenizeResult = lexer.Tokenize();
@@ -39,6 +54,19 @@ internal class Program
 
 		Result<List<Statement>> parseResult = parser.Parse();
 		result.Combine(parseResult);
+
+		Assembler assembler = new(parseResult.ResultObject);
+		Result<List<byte>> assemblerResult = assembler.Assemble();
+		result.Combine(assemblerResult);
+
+		if (result.IsSuccess)
+		{
+			File.WriteAllBytes(outputFilePath, assemblerResult.ResultObject.ToArray());
+		}
+		stopwatch.Stop();
+
+		Console.WriteLine($"Assembled {assemblerResult.ResultObject.Count} bytes in {stopwatch.ElapsedMilliseconds / 1000.0} seconds");
+		Console.WriteLine();
 
 		Console.WriteLine("=== WARNINGS ===");
 		foreach (Result.Error warning in result.Warnings)
@@ -56,31 +84,18 @@ internal class Program
 
 		Console.WriteLine();
 
-		Console.WriteLine("=== TOKENS ===");
-		foreach (Token token in tokenizeResult.ResultObject)
-		{
-			Console.WriteLine(token);
-		}
-		Console.WriteLine();
-		Console.WriteLine("=== STATEMENTS ===");
-		foreach (Statement statement in parseResult.ResultObject)
-		{
-			Console.WriteLine(statement);
-
-			if (statement is InstructionStatement instruction)
-			{
-				InstructionTable.TryResolveInstruction(instruction, out InstructionTable.Entry? entry);
-
-				if (entry is not null)
-				{
-					Console.WriteLine($"Matched as format {entry.InstructionFormat} with opcode 0b{entry.Opcode:b} and function 0b{entry.Function:b}");
-				}
-				else
-				{
-					Console.WriteLine($"Did not match to an instruction!");
-				}
-			}
-		}
-		Console.WriteLine();
+		// yum yum 18000 line output for my "test everything" source file
+		// Console.WriteLine("=== TOKENS ===");
+		// foreach (Token token in tokenizeResult.ResultObject)
+		// {
+		// 	Console.WriteLine(token);
+		// }
+		// Console.WriteLine();
+		// Console.WriteLine("=== STATEMENTS ===");
+		// foreach (Statement statement in parseResult.ResultObject)
+		// {
+		// 	Console.WriteLine(statement);
+		// }
+		// Console.WriteLine();
 	}
 }

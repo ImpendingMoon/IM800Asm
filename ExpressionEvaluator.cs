@@ -138,7 +138,7 @@ internal class ExpressionEvaluator
 				_ => throw new Exception($"unknown signedness {signed}"),
 			};
 
-			result.AddWarning("Expression", $"{line}:{column}:\tvalue 0x{value:X} truncated to {signedDisplay}{size}");
+			result.AddWarning("Expression", $"{line}:{column}:\tvalue {value} truncated to {signedDisplay}{size}");
 		}
 
 		result.ResultObject = truncated;
@@ -246,10 +246,12 @@ internal class ExpressionEvaluator
 					if (it.Lexeme.Equals(Constants.ShiftLeftAlias, StringComparison.OrdinalIgnoreCase))
 					{
 						type = Constants.TokenType.ShiftLeft;
+						Advance();
 					}
 					else if (it.Lexeme.Equals(Constants.ShiftRightAlias, StringComparison.OrdinalIgnoreCase))
 					{
 						type = Constants.TokenType.ShiftRight;
+						Advance();
 					}
 				}
 			}
@@ -322,6 +324,7 @@ internal class ExpressionEvaluator
 					if (it.Lexeme.Equals(Constants.ModuloAlias, StringComparison.OrdinalIgnoreCase))
 					{
 						type = Constants.TokenType.Percent;
+						Advance();
 					}
 				}
 			}

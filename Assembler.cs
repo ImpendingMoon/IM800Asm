@@ -96,6 +96,9 @@ internal partial class Assembler
 				if (InstructionTable.TryResolveInstruction(inst, out InstructionTable.Entry? entry))
 				{
 					Debug.Assert(entry is not null);
+
+					FixupInstruction(inst, entry);
+
 					Result<long> instructionResult = entry.InstructionFormat switch
 					{
 						Constants.InstructionFormat.R => MeasureFormatR(inst, entry),

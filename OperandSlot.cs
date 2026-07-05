@@ -36,7 +36,7 @@ internal class OperandSlot
 				operand is RegisterOperand ro &&
 				ro.Register == ExactRegister,
 
-			Constants.AcceptedOperandType.Indirect =>
+			Constants.AcceptedOperandType.Memory =>
 				operand is IndirectRegisterOperand or IndirectExpressionOperand or IndexedOperand,
 
 			Constants.AcceptedOperandType.Immediate => operand is ExpressionOperand,
