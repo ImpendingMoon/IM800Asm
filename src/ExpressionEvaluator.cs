@@ -138,7 +138,10 @@ internal class ExpressionEvaluator
 				_ => throw new Exception($"unknown signedness {signed}"),
 			};
 
-			result.AddWarning("Expression", $"{line}:{column}:\tvalue {value} truncated to {signedDisplay}{size}");
+			result.AddWarning(
+				"Expression",
+				$"{line}:{column}:\tvalue {value} truncated to {signedDisplay}{size} {truncated}"
+			);
 		}
 
 		result.ResultObject = truncated;

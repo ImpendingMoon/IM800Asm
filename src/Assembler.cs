@@ -24,6 +24,8 @@ internal partial class Assembler
 	/// </summary>
 	private Dictionary<string, long> _symbolTable;
 
+	public IReadOnlyDictionary<string, long> SymbolTable => _symbolTable;
+
 	/// <summary>
 	/// Used by .EQU to redefine the last defined symbol
 	/// </summary>

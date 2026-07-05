@@ -1307,16 +1307,23 @@ internal partial class Assembler
 			_ => (long.MinValue, long.MaxValue),
 		};
 
+		long truncated = size switch
+		{
+			Constants.Size.Byte => (byte)relative,
+			Constants.Size.Word => (ushort)relative,
+			_ => relative,
+		};
+
 		if (relative < min || relative > max)
 		{
 			Token firstToken = operand.ExpressionTokens[0];
 			result.AddWarning(
 				"Assembler",
-				$"{firstToken.Line}:{firstToken.Column}:\trelative value {relative} truncated to Signed {size}"
+				$"{firstToken.Line}:{firstToken.Column}:\trelative value {relative} truncated to Signed {size} {truncated}"
 			);
 		}
 
-		result.ResultObject = relative;
+		result.ResultObject = truncated;
 		return result;
 	}
 

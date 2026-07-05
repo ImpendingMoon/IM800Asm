@@ -84,6 +84,21 @@ internal class Program
 
 		Console.WriteLine();
 
+		Console.WriteLine("=== SYMBOLS ===");
+		foreach (var kvp in assembler.SymbolTable.OrderBy(x => x.Value))
+		{
+			if (kvp.Value > 0)
+			{
+				Console.WriteLine($"{kvp.Key}:\t{kvp.Value:X8}");
+			}
+			else
+			{
+				Console.WriteLine($"{kvp.Key}:\t{kvp.Value}");
+			}
+		}
+
+		Console.WriteLine();
+
 		// yum yum 18000 line output for my "test everything" source file
 		// Console.WriteLine("=== TOKENS ===");
 		// foreach (Token token in tokenizeResult.ResultObject)

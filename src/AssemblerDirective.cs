@@ -36,18 +36,18 @@ internal partial class Assembler
 	{
 		return st.Directive switch
 		{
-			Constants.Directive.ORG => EmitOrgDirective(st), // This could be a lookup instead of re-evaluate
-			Constants.Directive.EQU => new(0), // Does not affect LC, already evaluated
-			Constants.Directive.ALIGN => EmitAlignDirective(st), // same lookup thing
+			Constants.Directive.ORG => new(st.Length),
+			Constants.Directive.EQU => new(0),
+			Constants.Directive.ALIGN => new(st.Length),
 			Constants.Directive.DB or Constants.Directive.DEFB => EmitDefineValue(st, Constants.Size.Byte),
 			Constants.Directive.DW or Constants.Directive.DEFW => EmitDefineValue(st, Constants.Size.Word),
 			Constants.Directive.DD or Constants.Directive.DEFD => EmitDefineValue(st, Constants.Size.Dword),
 			Constants.Directive.DQ or Constants.Directive.DEFQ => EmitDefineValue(st, Constants.Size.Qword),
 			Constants.Directive.DS or Constants.Directive.DEFS => EmitDefineValue(st, Constants.Size.Byte),
-			Constants.Directive.RB or Constants.Directive.RESB => EmitReserveSpace(st, Constants.Size.Byte),
-			Constants.Directive.RW or Constants.Directive.RESW => EmitReserveSpace(st, Constants.Size.Word),
-			Constants.Directive.RD or Constants.Directive.RESD => EmitReserveSpace(st, Constants.Size.Dword),
-			Constants.Directive.RQ or Constants.Directive.RESQ => EmitReserveSpace(st, Constants.Size.Qword),
+			Constants.Directive.RB or Constants.Directive.RESB => new(st.Length),
+			Constants.Directive.RW or Constants.Directive.RESW => new(st.Length),
+			Constants.Directive.RD or Constants.Directive.RESD => new(st.Length),
+			Constants.Directive.RQ or Constants.Directive.RESQ => new(st.Length),
 			_ => throw new Exception($"unknown directive {st.Directive}"),
 		};
 	}
@@ -72,12 +72,13 @@ internal partial class Assembler
 		};
 
 		result.ResultObject = st.Operands.Count * multiplier;
+		st.Length = result.ResultObject;
 		return result;
 	}
 
 	private Result<long> EmitDefineValue(DirectiveStatement st, Constants.Size size)
 	{
-		Result<long> result = new(0);
+		Result<long> result = new(st.Length);
 
 		if (st.Operands.Count == 0)
 		{
@@ -116,7 +117,6 @@ internal partial class Assembler
 			_ => throw new Exception($"unknown size {size}"),
 		};
 
-		result.ResultObject = st.Operands.Count * multiplier;
 		return result;
 	}
 
@@ -161,6 +161,7 @@ internal partial class Assembler
 		}
 
 		result.ResultObject = evalResult.ResultObject - _locationCounter;
+		st.Length = result.ResultObject;
 		return result;
 	}
 
@@ -243,6 +244,7 @@ internal partial class Assembler
 		long alignedCounter = (_locationCounter + alignment - 1) / alignment * alignment;
 		result.ResultObject = alignedCounter - _locationCounter;
 
+		st.Length = result.ResultObject;
 		return result;
 	}
 
@@ -295,6 +297,7 @@ internal partial class Assembler
 		};
 
 		result.ResultObject = evalResult.ResultObject * multiplier;
+		st.Length = result.ResultObject;
 		return result;
 	}
 }
