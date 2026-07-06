@@ -18,7 +18,7 @@ internal partial class Assembler
 			Constants.Directive.DW or Constants.Directive.DEFW => MeasureDefineValue(st, Constants.Size.Word),
 			Constants.Directive.DD or Constants.Directive.DEFD => MeasureDefineValue(st, Constants.Size.Dword),
 			Constants.Directive.DQ or Constants.Directive.DEFQ => MeasureDefineValue(st, Constants.Size.Qword),
-			Constants.Directive.DS or Constants.Directive.DEFS => MeasureDefineValue(st, Constants.Size.Byte),
+			Constants.Directive.DS or Constants.Directive.DEFS => MeasureDefineSpace(st),
 			Constants.Directive.RB or Constants.Directive.RESB => EmitReserveSpace(st, Constants.Size.Byte),
 			Constants.Directive.RW or Constants.Directive.RESW => EmitReserveSpace(st, Constants.Size.Word),
 			Constants.Directive.RD or Constants.Directive.RESD => EmitReserveSpace(st, Constants.Size.Dword),
@@ -43,7 +43,7 @@ internal partial class Assembler
 			Constants.Directive.DW or Constants.Directive.DEFW => EmitDefineValue(st, Constants.Size.Word),
 			Constants.Directive.DD or Constants.Directive.DEFD => EmitDefineValue(st, Constants.Size.Dword),
 			Constants.Directive.DQ or Constants.Directive.DEFQ => EmitDefineValue(st, Constants.Size.Qword),
-			Constants.Directive.DS or Constants.Directive.DEFS => EmitDefineValue(st, Constants.Size.Byte),
+			Constants.Directive.DS or Constants.Directive.DEFS => EmitDefineSpace(st),
 			Constants.Directive.RB or Constants.Directive.RESB => new(st.Length),
 			Constants.Directive.RW or Constants.Directive.RESW => new(st.Length),
 			Constants.Directive.RD or Constants.Directive.RESD => new(st.Length),
@@ -108,14 +108,99 @@ internal partial class Assembler
 			EmitValue(evalResult.ResultObject, size);
 		}
 
-		int multiplier = size switch
+		return result;
+	}
+
+	private Result<long> MeasureDefineSpace(DirectiveStatement st)
+	{
+		Result<long> result = new(0);
+
+		if (st.Operands.Count == 0)
 		{
-			Constants.Size.Byte => 1,
-			Constants.Size.Word => 2,
-			Constants.Size.Dword => 4,
-			Constants.Size.Qword => 8,
-			_ => throw new Exception($"unknown size {size}"),
-		};
+			result.AddError("Assembler", $"{st.Line}:{st.Column}:\t{st.Directive} expected operand list");
+			return result;
+		}
+		else if (st.Operands.Count > 2)
+		{
+			result.AddError("Assembler", $"{st.Line}:{st.Column}:\tinvalid operands for {st.Directive}");
+			return result;
+		}
+
+
+		if (st.Operands[0] is not ExpressionOperand eo)
+		{
+			result.AddError(
+				"Assembler",
+				$"{st.Operands[0].Line}:{st.Operands[0].Column}:\tinvalid operand for directive {st.Directive}"
+			);
+			return result;
+		}
+
+		Result<long> spaceEvalResult = _evaluator.Evaluate(
+			eo.ExpressionTokens,
+			_locationCounter,
+			Constants.Size.Qword,
+			Constants.Signedness.Signed
+		);
+
+		result.Combine(spaceEvalResult);
+
+		if (spaceEvalResult.ResultObject < 0)
+		{
+			result.AddError(
+				"Assembler",
+				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be negative"
+			);
+			return result;
+		}
+
+		if (spaceEvalResult.ResultObject > uint.MaxValue)
+		{
+			result.AddError(
+				"Assembler",
+				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+			);
+			return result;
+		}
+
+		st.Length = spaceEvalResult.ResultObject;
+		return result;
+	}
+
+	private Result<long> EmitDefineSpace(DirectiveStatement st)
+	{
+		Result<long> result = new(st.Length);
+
+		long fillByte = 0;
+
+		if (st.Operands.Count == 2)
+		{
+			if (st.Operands[1] is not ExpressionOperand eo)
+			{
+				result.AddError(
+					"Assembler",
+					$"{st.Operands[1].Line}:{st.Operands[1].Column}:\tinvalid operand for directive {st.Directive}"
+				);
+				return result;
+			}
+			else
+			{
+				Result<long> fillEvalResult = _evaluator.Evaluate(
+					eo.ExpressionTokens,
+					_locationCounter,
+					Constants.Size.Byte,
+					Constants.Signedness.Either
+				);
+
+				result.Combine(fillEvalResult);
+				fillByte = fillEvalResult.ResultObject;
+			}
+		}
+
+		for (int i = 0; i < st.Length; i++)
+		{
+			EmitValue(fillByte, Constants.Size.Byte);
+		}
 
 		return result;
 	}
