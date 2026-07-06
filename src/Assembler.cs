@@ -136,6 +136,7 @@ internal partial class Assembler
 	private Result PassTwo()
 	{
 		Result result = new();
+		_locationCounter = 0;
 
 		foreach (Statement st in _statements)
 		{
