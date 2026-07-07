@@ -4,8 +4,7 @@ namespace IM800Asm;
 
 internal class Statement
 {
-	public int Line { get; set; }
-	public int Column { get; set; }
+	public Location Location { get; set; }
 
 	// Used for listing files
 	public long FileOffset { get; set; }
@@ -14,10 +13,9 @@ internal class Statement
 
 internal class LabelStatement : Statement
 {
-	public LabelStatement(int line, int column, string text)
+	public LabelStatement(Location location, string text)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Text = text;
 	}
 
@@ -25,16 +23,15 @@ internal class LabelStatement : Statement
 
 	public override string ToString()
 	{
-		return $"{Line}:{Column}: Label: {Text}";
+		return $"{Location}\tLabel: {Text}";
 	}
 }
 
 internal class InstructionStatement : Statement
 {
-	public InstructionStatement(int line, int column, Constants.Instruction instruction, Constants.Size? size)
+	public InstructionStatement(Location location, Constants.Instruction instruction, Constants.Size? size)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Instruction = instruction;
 		ManualSize = size;
 		FinalSize = default;
@@ -53,7 +50,7 @@ internal class InstructionStatement : Statement
 	{
 		StringBuilder sb = new();
 
-		sb.Append($"{Line}:{Column}: {Instruction}");
+		sb.Append($"{Location}\t{Instruction}");
 
 		if (ManualSize is not null)
 		{
@@ -79,10 +76,9 @@ internal class InstructionStatement : Statement
 
 internal class DirectiveStatement : Statement
 {
-	public DirectiveStatement(int line, int column, Constants.Directive directive)
+	public DirectiveStatement(Location location, Constants.Directive directive)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Directive = directive;
 	}
 
@@ -93,7 +89,7 @@ internal class DirectiveStatement : Statement
 	{
 		StringBuilder sb = new();
 
-		sb.Append($"{Line}:{Column}: {Directive}");
+		sb.Append($"{Location}\t{Directive}");
 
 		sb.Append(' ');
 
@@ -113,14 +109,13 @@ internal class DirectiveStatement : Statement
 
 internal class EndOfFileStatement : Statement
 {
-	public EndOfFileStatement(int line, int column)
+	public EndOfFileStatement(Location location)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 	}
 
 	public override string ToString()
 	{
-		return $"{Line}:{Column}: EOF";
+		return $"{Location}\tEOF";
 	}
 }

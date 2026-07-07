@@ -83,7 +83,7 @@ internal partial class Assembler
 				}
 				else
 				{
-					result.AddError("Assembler", $"{ls.Line}:{ls.Text}:\tcannot redefine symbol \"{ls.Text}\"");
+					result.AddError("Assembler", $"{ls.Location}\tcannot redefine symbol \"{ls.Text}\"");
 				}
 			}
 			else if (st is DirectiveStatement ds)
@@ -121,7 +121,7 @@ internal partial class Assembler
 				{
 					result.AddError(
 						"Assembler",
-						$"{inst.Line}:{inst.Column}:\tinvalid operands for instruction {inst.Instruction}"
+						$"{inst.Location}\tinvalid operands for instruction {inst.Instruction}"
 					);
 				}
 
@@ -179,7 +179,7 @@ internal partial class Assembler
 				{
 					result.AddError(
 						"Assembler",
-						$"{inst.Line}:{inst.Column}:\tinvalid operands for instruction {inst.Instruction}"
+						$"{inst.Location}\tinvalid operands for instruction {inst.Instruction}"
 					);
 				}
 

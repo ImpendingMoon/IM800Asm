@@ -49,7 +49,7 @@ internal class Parser
 
 		if (token is SymbolToken t && t.Type == Constants.TokenType.EndOfFile)
 		{
-			result.ResultObject = new EndOfFileStatement(t.Line, t.Column);
+			result.ResultObject = new EndOfFileStatement(t.Location);
 		}
 		else if (token is SymbolToken nl && nl.Type == Constants.TokenType.NewLine)
 		{
@@ -75,7 +75,7 @@ internal class Parser
 		}
 		else
 		{
-			result.AddError("Parser", $"{token.Line}:{token.Column}:\tunexpected token {token}");
+			result.AddError("Parser", $"{token.Location}\tunexpected token {token}");
 			Advance();
 		}
 
@@ -88,7 +88,7 @@ internal class Parser
 
 		if (Current() is IdentifierToken t && Next() is SymbolToken n && n.Type == Constants.TokenType.Colon)
 		{
-			result.ResultObject = new(t.Line, t.Column, t.Lexeme);
+			result.ResultObject = new(t.Location, t.Lexeme);
 			Advance(2);
 			return true;
 		}
@@ -119,7 +119,7 @@ internal class Parser
 
 			if (Enum.TryParse(canon, ignoreCase: true, out Constants.Instruction instruction))
 			{
-				InstructionStatement statement = new(t.Line, t.Column, instruction, size);
+				InstructionStatement statement = new(t.Location, instruction, size);
 				Advance();
 
 				Result<List<Operand>> operandsResult = ParseOperands();
@@ -169,7 +169,7 @@ internal class Parser
 
 			if (Enum.TryParse(mnemonic, ignoreCase: true, out Constants.Directive directive))
 			{
-				DirectiveStatement statement = new(t.Line, t.Column, directive);
+				DirectiveStatement statement = new(t.Location, directive);
 				Advance();
 
 				Result<List<Operand>> operandsResult = ParseOperands();
@@ -241,7 +241,7 @@ internal class Parser
 			}
 			else if (!IsEndOfOperand(c))
 			{
-				result.AddError("Parser", $"{c.Line}:{c.Column}:\texpected end of operand");
+				result.AddError("Parser", $"{c.Location}\texpected end of operand");
 				Advance();
 			}
 		}
@@ -255,8 +255,8 @@ internal class Parser
 
 		foreach (byte b in token.StringData)
 		{
-			NumberToken byteToken = new(token.Line, token.Column, b.ToString(), b);
-			operands.Add(new ExpressionOperand(token.Line, token.Column, [byteToken]));
+			NumberToken byteToken = new(token.Location, b.ToString(), b);
+			operands.Add(new ExpressionOperand(token.Location, [byteToken]));
 		}
 
 		return operands;
@@ -300,7 +300,7 @@ internal class Parser
 		}
 		else
 		{
-			result.AddError("Parser", $"{c.Line}:{c.Column}:\tunexpected token {c}");
+			result.AddError("Parser", $"{c.Location}\tunexpected token {c}");
 			Advance();
 		}
 
@@ -325,23 +325,23 @@ internal class Parser
 				// indexed
 				List<Token> tokens = ParseExpression();
 
-				result.ResultObject = new IndexedOperand(start.Line, start.Column, register, tokens);
+				result.ResultObject = new IndexedOperand(start.Location, register, tokens);
 			}
 			else
 			{
 				// indirect
-				result.ResultObject = new IndirectRegisterOperand(start.Line, start.Column, register);
+				result.ResultObject = new IndirectRegisterOperand(start.Location, register);
 			}
 		}
 		else if (IsExpressionStart(inner))
 		{
 			// direct
 			List<Token> tokens = ParseExpression();
-			result.ResultObject = new IndirectExpressionOperand(start.Line, start.Column, tokens);
+			result.ResultObject = new IndirectExpressionOperand(start.Location, tokens);
 		}
 		else
 		{
-			result.AddError("Parser", $"{inner.Line}:{inner.Column}:\texpected register or expression");
+			result.AddError("Parser", $"{inner.Location}\texpected register or expression");
 			Advance();
 		}
 
@@ -352,7 +352,7 @@ internal class Parser
 		else
 		{
 			Token c = Current();
-			result.AddError("Parser", $"{c.Line}:{c.Column}:\texpected ']'");
+			result.AddError("Parser", $"{c.Location}\texpected ']'");
 		}
 
 		return result;
@@ -367,7 +367,7 @@ internal class Parser
 			&& Enum.TryParse(t.Lexeme, ignoreCase: true, out Constants.Register register)
 		)
 		{
-			result.ResultObject = new RegisterOperand(t.Line, t.Column, register);
+			result.ResultObject = new RegisterOperand(t.Location, register);
 			Advance();
 			return true;
 		}
@@ -384,7 +384,7 @@ internal class Parser
 			&& Enum.TryParse(t.Lexeme, ignoreCase: true, out Constants.Condition condition)
 		)
 		{
-			result.ResultObject = new ConditionOperand(t.Line, t.Column, condition);
+			result.ResultObject = new ConditionOperand(t.Location, condition);
 			Advance();
 			return true;
 		}
@@ -401,7 +401,7 @@ internal class Parser
 			&& Enum.TryParse(t.Lexeme, ignoreCase: true, out Constants.Block block)
 		)
 		{
-			result.ResultObject = new BlockOperand(t.Line, t.Column, block);
+			result.ResultObject = new BlockOperand(t.Location, block);
 			Advance();
 			return true;
 		}
@@ -424,7 +424,7 @@ internal class Parser
 				return false;
 			}
 
-			result.ResultObject = new SizeOperand(t.Line, t.Column, size);
+			result.ResultObject = new SizeOperand(t.Location, size);
 			Advance();
 			return true;
 		}
@@ -443,7 +443,7 @@ internal class Parser
 
 		Token start = Current();
 		List<Token> tokens = ParseExpression();
-		result.ResultObject = new ExpressionOperand(start.Line, start.Column, tokens);
+		result.ResultObject = new ExpressionOperand(start.Location, tokens);
 
 		return true;
 	}
@@ -511,7 +511,8 @@ internal class Parser
 	{
 		if (_position >= _tokens.Count)
 		{
-			return new SymbolToken(0, 0, Constants.TokenType.EndOfFile);
+			Location location = new(string.Empty, 0, 0);
+			return new SymbolToken(location, Constants.TokenType.EndOfFile);
 		}
 
 		return _tokens[_position];
@@ -521,7 +522,8 @@ internal class Parser
 	{
 		if (_position + 1 >= _tokens.Count)
 		{
-			return new SymbolToken(0, 0, Constants.TokenType.EndOfFile);
+			Location location = new(string.Empty, 0, 0);
+			return new SymbolToken(location, Constants.TokenType.EndOfFile);
 		}
 
 		return _tokens[_position + 1];

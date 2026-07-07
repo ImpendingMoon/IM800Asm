@@ -45,7 +45,7 @@ internal class Program
 
 		// Temporary driver while I develop the thing
 
-		Lexer lexer = new(source);
+		Lexer lexer = new(source, sourceFilePath);
 
 		Result<List<Token>> tokenizeResult = lexer.Tokenize();
 		result.Combine(tokenizeResult);

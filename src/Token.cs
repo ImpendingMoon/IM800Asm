@@ -4,8 +4,7 @@ namespace IM800Asm;
 
 internal class Token
 {
-	public int Line { get; set; }
-	public int Column { get; set; }
+	public Location Location { get; set; }
 
 	public virtual string ToShortString()
 	{
@@ -15,10 +14,9 @@ internal class Token
 
 internal class SymbolToken : Token
 {
-	public SymbolToken(int line, int column, Constants.TokenType type)
+	public SymbolToken(Location location, Constants.TokenType type)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Type = type;
 	}
 
@@ -61,16 +59,15 @@ internal class SymbolToken : Token
 
 	public override string ToString()
 	{
-		return $"{Line}:{Column}:\tSymbol: {Type}";
+		return $"{Location}\tSymbol: {Type}";
 	}
 }
 
 internal class IdentifierToken : Token
 {
-	public IdentifierToken(int line, int column, string lexeme)
+	public IdentifierToken(Location location, string lexeme)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Lexeme = lexeme;
 	}
 
@@ -83,16 +80,15 @@ internal class IdentifierToken : Token
 
 	public override string ToString()
 	{
-		return $"{Line}:{Column}:\tIdentifier: {Lexeme}";
+		return $"{Location}\tIdentifier: {Lexeme}";
 	}
 }
 
 internal class NumberToken : Token
 {
-	public NumberToken(int line, int column, string lexeme, long value)
+	public NumberToken(Location location, string lexeme, long value)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Lexeme = lexeme;
 		Value = value;
 	}
@@ -107,16 +103,15 @@ internal class NumberToken : Token
 
 	public override string ToString()
 	{
-		return $"{Line}:{Column}:\tNumber: {Lexeme} (0x{Value:X})";
+		return $"{Location}\tNumber: {Lexeme} (0x{Value:X})";
 	}
 }
 
 internal class StringToken : Token
 {
-	public StringToken(int line, int column, string lexeme, List<byte> stringData)
+	public StringToken(Location location, string lexeme, List<byte> stringData)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Lexeme = lexeme;
 		StringData = stringData;
 	}
@@ -131,6 +126,6 @@ internal class StringToken : Token
 
 	public override string ToString()
 	{
-		return $"{Line}:{Column}:\tString: {Lexeme}";
+		return $"{Location}\tString: {Lexeme}";
 	}
 }

@@ -34,15 +34,14 @@ internal class ExpressionEvaluator
 		result.ResultObject = value;
 
 		Token firstToken = tokens[0];
-		Result<long> rangeResult = ValidateTruncateRange(firstToken.Line, firstToken.Column, value, size, signed);
+		Result<long> rangeResult = ValidateTruncateRange(firstToken.Location, value, size, signed);
 		result.Combine(rangeResult);
 
 		return result;
 	}
 
 	private static Result<long> ValidateTruncateRange(
-		int line,
-		int column,
+		Location location,
 		long value,
 		Constants.Size size,
 		Constants.Signedness signed
@@ -140,7 +139,7 @@ internal class ExpressionEvaluator
 
 			result.AddWarning(
 				"Expression",
-				$"{line}:{column}:\tvalue {value} truncated to {signedDisplay}{size} {truncated}"
+				$"{location}\tvalue {value} truncated to {signedDisplay}{size} {truncated}"
 			);
 		}
 
@@ -343,7 +342,7 @@ internal class ExpressionEvaluator
 			{
 				// Get previous token (last token of add/sub)
 				Token p = _tokens[_position - 1];
-				result.AddError("Expression", $"{p.Line}:{p.Column}:\tdivision by zero");
+				result.AddError("Expression", $"{p.Location}\tdivision by zero");
 				left = 0;
 			}
 			else
@@ -403,7 +402,7 @@ internal class ExpressionEvaluator
 
 			if (value is null)
 			{
-				result.AddError("Expression", $"{it.Line}:{it.Column}:\tundefined symbol \"{it.Lexeme}\"");
+				result.AddError("Expression", $"{it.Location}\tundefined symbol \"{it.Lexeme}\"");
 				return 0;
 			}
 
@@ -429,14 +428,14 @@ internal class ExpressionEvaluator
 				}
 				else
 				{
-					result.AddError("Expression", $"{t.Line}:{t.Column}\texpected ')'");
+					result.AddError("Expression", $"{t.Location}\texpected ')'");
 				}
 
 				return value;
 			}
 		}
 
-		result.AddError("Expression", $"{t.Line}:{t.Column}:\texpected value, got {t.ToShortString()}");
+		result.AddError("Expression", $"{t.Location}\texpected value, got {t.ToShortString()}");
 		return 0;
 	}
 
@@ -460,7 +459,8 @@ internal class ExpressionEvaluator
 	{
 		if (_position >= _tokens.Count)
 		{
-			return new SymbolToken(0, 0, Constants.TokenType.EndOfFile);
+			Location location = new(string.Empty, 0, 0);
+			return new SymbolToken(location, Constants.TokenType.EndOfFile);
 		}
 
 		return _tokens[_position];

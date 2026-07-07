@@ -6,15 +6,17 @@ namespace IM800Asm;
 
 internal class Lexer
 {
-	private string _source = string.Empty;
+	private string _source;
+	private string _filePath;
 	private int _position = 0;
 	private int _line = 1;
 	private int _column = 1;
 	private List<Token> _tokens = [];
 
-	public Lexer(string source)
+	public Lexer(string source, string filePath)
 	{
 		_source = source;
+		_filePath = filePath;
 	}
 
 	public Result<List<Token>> Tokenize()
@@ -50,12 +52,12 @@ internal class Lexer
 
 		if (c == '\0')
 		{
-			SymbolToken token = new(_line, _column, Constants.TokenType.EndOfFile);
+			SymbolToken token = MakeSymbolToken(Constants.TokenType.EndOfFile);
 			result.ResultObject = token;
 		}
 		else if (IsNewLine(c))
 		{
-			SymbolToken token = new(_line, _column, Constants.TokenType.NewLine);
+			SymbolToken token = MakeSymbolToken(Constants.TokenType.NewLine);
 			ConsumeNewLine();
 			result.ResultObject = token;
 		}
@@ -142,27 +144,27 @@ internal class Lexer
 		switch ((c, n))
 		{
 			case ('<', '<'):
-				token = new(_line, _column, Constants.TokenType.ShiftLeft);
+				token = MakeSymbolToken(Constants.TokenType.ShiftLeft);
 				matchedTwo = true;
 				break;
 			case ('>', '>'):
-				token = new(_line, _column, Constants.TokenType.ShiftRight);
+				token = MakeSymbolToken(Constants.TokenType.ShiftRight);
 				matchedTwo = true;
 				break;
 			case ('=', '='):
-				token = new(_line, _column, Constants.TokenType.Equal);
+				token = MakeSymbolToken(Constants.TokenType.Equal);
 				matchedTwo = true;
 				break;
 			case ('!', '='):
-				token = new(_line, _column, Constants.TokenType.NotEqual);
+				token = MakeSymbolToken(Constants.TokenType.NotEqual);
 				matchedTwo = true;
 				break;
 			case ('>', '='):
-				token = new(_line, _column, Constants.TokenType.GreaterEqual);
+				token = MakeSymbolToken(Constants.TokenType.GreaterEqual);
 				matchedTwo = true;
 				break;
 			case ('<', '='):
-				token = new(_line, _column, Constants.TokenType.LessEqual);
+				token = MakeSymbolToken(Constants.TokenType.LessEqual);
 				matchedTwo = true;
 				break;
 		}
@@ -178,79 +180,79 @@ internal class Lexer
 		switch (c)
 		{
 			case ',':
-				token = new(_line, _column, Constants.TokenType.Comma);
+				token = MakeSymbolToken(Constants.TokenType.Comma);
 				matchedOne = true;
 				break;
 			case ':':
-				token = new(_line, _column, Constants.TokenType.Colon);
+				token = MakeSymbolToken(Constants.TokenType.Colon);
 				matchedOne = true;
 				break;
 			case '(':
-				token = new(_line, _column, Constants.TokenType.LParen);
+				token = MakeSymbolToken(Constants.TokenType.LParen);
 				matchedOne = true;
 				break;
 			case ')':
-				token = new(_line, _column, Constants.TokenType.RParen);
+				token = MakeSymbolToken(Constants.TokenType.RParen);
 				matchedOne = true;
 				break;
 			case '[':
-				token = new(_line, _column, Constants.TokenType.LBracket);
+				token = MakeSymbolToken(Constants.TokenType.LBracket);
 				matchedOne = true;
 				break;
 			case ']':
-				token = new(_line, _column, Constants.TokenType.RBracket);
+				token = MakeSymbolToken(Constants.TokenType.RBracket);
 				matchedOne = true;
 				break;
 			case '+':
-				token = new(_line, _column, Constants.TokenType.Plus);
+				token = MakeSymbolToken(Constants.TokenType.Plus);
 				matchedOne = true;
 				break;
 			case '-':
-				token = new(_line, _column, Constants.TokenType.Minus);
+				token = MakeSymbolToken(Constants.TokenType.Minus);
 				matchedOne = true;
 				break;
 			case '*':
-				token = new(_line, _column, Constants.TokenType.Star);
+				token = MakeSymbolToken(Constants.TokenType.Star);
 				matchedOne = true;
 				break;
 			case '/':
-				token = new(_line, _column, Constants.TokenType.Slash);
+				token = MakeSymbolToken(Constants.TokenType.Slash);
 				matchedOne = true;
 				break;
 			case '%':
-				token = new(_line, _column, Constants.TokenType.Percent);
+				token = MakeSymbolToken(Constants.TokenType.Percent);
 				matchedOne = true;
 				break;
 			case '&':
-				token = new(_line, _column, Constants.TokenType.Ampersand);
+				token = MakeSymbolToken(Constants.TokenType.Ampersand);
 				matchedOne = true;
 				break;
 			case '|':
-				token = new(_line, _column, Constants.TokenType.Pipe);
+				token = MakeSymbolToken(Constants.TokenType.Pipe);
 				matchedOne = true;
 				break;
 			case '^':
-				token = new(_line, _column, Constants.TokenType.Caret);
+				token = MakeSymbolToken(Constants.TokenType.Caret);
 				matchedOne = true;
 				break;
 			case '~':
-				token = new(_line, _column, Constants.TokenType.Tilde);
+				token = MakeSymbolToken(Constants.TokenType.Tilde);
 				matchedOne = true;
 				break;
 			case '>':
-				token = new(_line, _column, Constants.TokenType.Greater);
+				token = MakeSymbolToken(Constants.TokenType.Greater);
 				matchedOne = true;
 				break;
 			case '<':
-				token = new(_line, _column, Constants.TokenType.Less);
+				token = MakeSymbolToken(Constants.TokenType.Less);
 				matchedOne = true;
 				break;
 			case '!':
-				token = new(_line, _column, Constants.TokenType.Exclamation);
+				token = MakeSymbolToken(Constants.TokenType.Exclamation);
 				matchedOne = true;
 				break;
 			case '$':
-				token = new(_line, _column, Constants.TokenType.Dollar);
+				token = MakeSymbolToken(Constants.TokenType.Dollar);
 				matchedOne = true;
 				break;
 		}
@@ -284,7 +286,7 @@ internal class Lexer
 		if (c == '\'')
 		{
 			result.AddError("Lexer", $"{_line}:{_column}:\texpected character in character literal");
-			result.ResultObject = new(_line, _column, "''", 0);
+			result.ResultObject = MakeNumberToken("''", 0);
 			Advance();
 		}
 		else
@@ -303,12 +305,7 @@ internal class Lexer
 				Advance();
 			}
 
-			result.ResultObject = new(
-				_line,
-				startColumn,
-				_source[start.._position],
-				parseResult.ResultObject
-			);
+			result.ResultObject = MakeNumberToken(_source[start.._position], parseResult.ResultObject);
 		}
 
 		return true;
@@ -327,8 +324,8 @@ internal class Lexer
 
 		List<byte> stringValue = [];
 
-		int start = _position;
-		int startColumn = _column;
+		int startPosition = _position;
+		Location startLocation = new(_filePath, _line, _column);
 
 		Advance();
 		c = Current();
@@ -363,12 +360,7 @@ internal class Lexer
 			Advance();
 		}
 
-		result.ResultObject = new(
-			_line,
-			startColumn,
-			_source[start.._position],
-			stringValue
-		);
+		result.ResultObject = MakeStringToken(startLocation, _source[startPosition.._position], stringValue);
 
 		return true;
 	}
@@ -384,8 +376,7 @@ internal class Lexer
 			return false;
 		}
 
-		int start = _position;
-		int startColumn = _column;
+		Location startLocation = new(_filePath, _line, _column);
 
 		StringBuilder sb = new();
 
@@ -439,14 +430,15 @@ internal class Lexer
 		}
 		catch (OverflowException)
 		{
-			result.AddError("Lexer", $"{_line}:{startColumn}:\tnumber literal value too large \"{lexeme}\"");
+			result.AddError("Lexer", $"{startLocation}:\tnumber literal value too large \"{lexeme}\"");
 		}
 		catch (Exception)
 		{
-			result.AddError("Lexer", $"{_line}:{startColumn}:\tinvalid number literal \"{lexeme}\"");
+			result.AddError("Lexer", $"{_line}:{startLocation}:\tinvalid number literal \"{lexeme}\"");
 		}
 
-		result.ResultObject = new(_line, startColumn, lexeme, value);
+
+		result.ResultObject = MakeNumberToken(startLocation, lexeme, value);
 
 		return true;
 	}
@@ -463,7 +455,7 @@ internal class Lexer
 		}
 
 		int start = _position;
-		int startColumn = _column;
+		Location startLocation = new(_filePath, _line, _column);
 
 		while (IsIdentifierChar(c))
 		{
@@ -471,7 +463,7 @@ internal class Lexer
 			c = Current();
 		}
 
-		result.ResultObject = new(_line, startColumn, _source[start.._position]);
+		result.ResultObject = MakeIdentifierToken(startLocation, _source[start.._position]);
 
 		return true;
 	}
@@ -647,5 +639,32 @@ internal class Lexer
 	{
 		_position += count;
 		_column += count;
+	}
+
+	private SymbolToken MakeSymbolToken(Constants.TokenType type)
+	{
+		Location location = new(_filePath, _line, _column);
+		return new(location, type);
+	}
+
+	private IdentifierToken MakeIdentifierToken(Location location, string lexeme)
+	{
+		return new(location, lexeme);
+	}
+
+	private NumberToken MakeNumberToken(string lexeme, long value)
+	{
+		Location location = new(_filePath, _line, _column);
+		return new(location, lexeme, value);
+	}
+
+	private NumberToken MakeNumberToken(Location location, string lexeme, long value)
+	{
+		return new(location, lexeme, value);
+	}
+
+	private StringToken MakeStringToken(Location location, string lexeme, List<byte> stringData)
+	{
+		return new(location, lexeme, stringData);
 	}
 }

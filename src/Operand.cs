@@ -4,16 +4,14 @@ namespace IM800Asm;
 
 internal class Operand
 {
-	public int Line { get; set; }
-	public int Column { get; set; }
+	public Location Location { get; set; }
 }
 
 internal class RegisterOperand : Operand
 {
-	public RegisterOperand(int line, int column, Constants.Register register)
+	public RegisterOperand(Location location, Constants.Register register)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Register = register;
 	}
 
@@ -27,10 +25,9 @@ internal class RegisterOperand : Operand
 
 internal class ExpressionOperand : Operand
 {
-	public ExpressionOperand(int line, int column, List<Token> expressionTokens)
+	public ExpressionOperand(Location location, List<Token> expressionTokens)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		ExpressionTokens = expressionTokens;
 	}
 
@@ -51,10 +48,9 @@ internal class ExpressionOperand : Operand
 
 internal class IndirectRegisterOperand : Operand
 {
-	public IndirectRegisterOperand(int line, int column, Constants.Register register)
+	public IndirectRegisterOperand(Location location, Constants.Register register)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Register = register;
 	}
 
@@ -68,10 +64,9 @@ internal class IndirectRegisterOperand : Operand
 
 internal class IndirectExpressionOperand : Operand
 {
-	public IndirectExpressionOperand(int line, int column, List<Token> expressionTokens)
+	public IndirectExpressionOperand(Location location, List<Token> expressionTokens)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		ExpressionTokens = expressionTokens;
 	}
 
@@ -96,10 +91,9 @@ internal class IndirectExpressionOperand : Operand
 
 internal class IndexedOperand : Operand
 {
-	public IndexedOperand(int line, int column, Constants.Register register, List<Token> expressionTokens)
+	public IndexedOperand(Location location, Constants.Register register, List<Token> expressionTokens)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Register = register;
 		ExpressionTokens = expressionTokens;
 	}
@@ -127,10 +121,9 @@ internal class IndexedOperand : Operand
 
 internal class ConditionOperand : Operand
 {
-	public ConditionOperand(int line, int column, Constants.Condition condition)
+	public ConditionOperand(Location location, Constants.Condition condition)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Condition = condition;
 	}
 
@@ -144,10 +137,9 @@ internal class ConditionOperand : Operand
 
 internal class BlockOperand : Operand
 {
-	public BlockOperand(int line, int column, Constants.Block block)
+	public BlockOperand(Location location, Constants.Block block)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Block = block;
 	}
 
@@ -161,10 +153,9 @@ internal class BlockOperand : Operand
 
 internal class SizeOperand : Operand
 {
-	public SizeOperand(int line, int column, Constants.Size size)
+	public SizeOperand(Location location, Constants.Size size)
 	{
-		Line = line;
-		Column = column;
+		Location = location;
 		Size = size;
 	}
 

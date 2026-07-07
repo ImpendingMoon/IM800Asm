@@ -58,7 +58,7 @@ internal partial class Assembler
 
 		if (st.Operands.Count == 0)
 		{
-			result.AddError("Assembler", $"{st.Line}:{st.Column}:\t{st.Directive} expected operand list");
+			result.AddError("Assembler", $"{st.Location}\t{st.Directive} expected operand list");
 			return result;
 		}
 
@@ -82,7 +82,7 @@ internal partial class Assembler
 
 		if (st.Operands.Count == 0)
 		{
-			result.AddError("Assembler", $"{st.Line}:{st.Column}:\t{st.Directive} expected operand list");
+			result.AddError("Assembler", $"{st.Location}\t{st.Directive} expected operand list");
 			return result;
 		}
 
@@ -92,7 +92,7 @@ internal partial class Assembler
 			{
 				result.AddError(
 					"Assembler",
-					$"{operand.Line}:{operand.Column}:\tinvalid operand for directive {st.Directive}"
+					$"{operand.Location}\tinvalid operand for directive {st.Directive}"
 				);
 				return result;
 			}
@@ -117,12 +117,12 @@ internal partial class Assembler
 
 		if (st.Operands.Count == 0)
 		{
-			result.AddError("Assembler", $"{st.Line}:{st.Column}:\t{st.Directive} expected operand list");
+			result.AddError("Assembler", $"{st.Location}\t{st.Directive} expected operand list");
 			return result;
 		}
 		else if (st.Operands.Count > 2)
 		{
-			result.AddError("Assembler", $"{st.Line}:{st.Column}:\tinvalid operands for {st.Directive}");
+			result.AddError("Assembler", $"{st.Location}\tinvalid operands for {st.Directive}");
 			return result;
 		}
 
@@ -131,7 +131,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Operands[0].Line}:{st.Operands[0].Column}:\tinvalid operand for directive {st.Directive}"
+				$"{st.Operands[0].Location}\tinvalid operand for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -149,7 +149,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be negative"
+				$"{st.Location}\t{st.Directive} expression cannot be negative"
 			);
 			return result;
 		}
@@ -158,7 +158,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+				$"{st.Location}\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
 			);
 			return result;
 		}
@@ -179,7 +179,7 @@ internal partial class Assembler
 			{
 				result.AddError(
 					"Assembler",
-					$"{st.Operands[1].Line}:{st.Operands[1].Column}:\tinvalid operand for directive {st.Directive}"
+					$"{st.Operands[1].Location}\tinvalid operand for directive {st.Directive}"
 				);
 				return result;
 			}
@@ -213,7 +213,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\tinvalid operands for directive {st.Directive}"
+				$"{st.Location}\tinvalid operands for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -231,7 +231,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be negative"
+				$"{st.Location}\t{st.Directive} expression cannot be negative"
 			);
 			return result;
 		}
@@ -240,7 +240,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+				$"{st.Location}\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
 			);
 			return result;
 		}
@@ -258,7 +258,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\tinvalid operands for directive {st.Directive}"
+				$"{st.Location}\tinvalid operands for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -267,7 +267,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} must follow a label declaration"
+				$"{st.Location}\t{st.Directive} must follow a label declaration"
 			);
 			return result;
 		}
@@ -292,7 +292,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\tinvalid operands for directive {st.Directive}"
+				$"{st.Location}\tinvalid operands for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -310,7 +310,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} expression must be positive"
+				$"{st.Location}\t{st.Directive} expression must be positive"
 			);
 			return result;
 		}
@@ -319,7 +319,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+				$"{st.Location}\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
 			);
 			return result;
 		}
@@ -341,7 +341,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\tinvalid operands for directive {st.Directive}"
+				$"{st.Location}\tinvalid operands for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -358,7 +358,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be negative"
+				$"{st.Location}\t{st.Directive} expression cannot be negative"
 			);
 			return result;
 		}
@@ -367,7 +367,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Line}:{st.Column}:\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+				$"{st.Location}\t{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
 			);
 			return result;
 		}
