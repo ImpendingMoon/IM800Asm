@@ -139,7 +139,7 @@ internal class ExpressionEvaluator
 
 			result.AddWarning(
 				"Expression",
-				$"{location}\tvalue {value} truncated to {signedDisplay}{size} {truncated}"
+				$"{location} value {value} truncated to {signedDisplay}{size} {truncated}"
 			);
 		}
 
@@ -342,7 +342,7 @@ internal class ExpressionEvaluator
 			{
 				// Get previous token (last token of add/sub)
 				Token p = _tokens[_position - 1];
-				result.AddError("Expression", $"{p.Location}\tdivision by zero");
+				result.AddError("Expression", $"{p.Location} division by zero");
 				left = 0;
 			}
 			else
@@ -402,7 +402,7 @@ internal class ExpressionEvaluator
 
 			if (value is null)
 			{
-				result.AddError("Expression", $"{it.Location}\tundefined symbol \"{it.Lexeme}\"");
+				result.AddError("Expression", $"{it.Location} undefined symbol \"{it.Lexeme}\"");
 				return 0;
 			}
 
@@ -428,14 +428,14 @@ internal class ExpressionEvaluator
 				}
 				else
 				{
-					result.AddError("Expression", $"{t.Location}\texpected ')'");
+					result.AddError("Expression", $"{t.Location} expected ')'");
 				}
 
 				return value;
 			}
 		}
 
-		result.AddError("Expression", $"{t.Location}\texpected value, got {t.ToShortString()}");
+		result.AddError("Expression", $"{t.Location} expected value, got {t.ToShortString()}");
 		return 0;
 	}
 

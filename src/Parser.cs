@@ -75,7 +75,7 @@ internal class Parser
 		}
 		else
 		{
-			result.AddError("Parser", $"{token.Location}\tunexpected token {token}");
+			result.AddError("Parser", $"{token.Location} unexpected token {token.ToShortString()}");
 			Advance();
 		}
 
@@ -241,7 +241,7 @@ internal class Parser
 			}
 			else if (!IsEndOfOperand(c))
 			{
-				result.AddError("Parser", $"{c.Location}\texpected end of operand");
+				result.AddError("Parser", $"{c.Location} expected end of operand");
 				Advance();
 			}
 		}
@@ -300,7 +300,7 @@ internal class Parser
 		}
 		else
 		{
-			result.AddError("Parser", $"{c.Location}\tunexpected token {c}");
+			result.AddError("Parser", $"{c.Location} unexpected token {c}");
 			Advance();
 		}
 
@@ -341,7 +341,7 @@ internal class Parser
 		}
 		else
 		{
-			result.AddError("Parser", $"{inner.Location}\texpected register or expression");
+			result.AddError("Parser", $"{inner.Location} expected register or expression");
 			Advance();
 		}
 
@@ -352,7 +352,7 @@ internal class Parser
 		else
 		{
 			Token c = Current();
-			result.AddError("Parser", $"{c.Location}\texpected ']'");
+			result.AddError("Parser", $"{c.Location} expected ']'");
 		}
 
 		return result;

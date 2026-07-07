@@ -73,6 +73,10 @@ internal static class Constants
 		ORG, EQU, ALIGN,
 		DEFB, DEFW, DEFD, DEFQ, DEFS, DB, DW, DD, DQ, DS,
 		RESB, RESW, RESD, RESQ, RB, RW, RD, RQ,
+		EXTERN, GLOBAL,
+		IF, ELIF, ELSE, ENDIF,
+		MACRO, ENDM,
+		INCLUDE,
 	}
 
 	public enum Register

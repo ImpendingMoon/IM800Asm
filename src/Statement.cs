@@ -23,7 +23,7 @@ internal class LabelStatement : Statement
 
 	public override string ToString()
 	{
-		return $"{Location}\tLabel: {Text}";
+		return $"{Location} Label: {Text}";
 	}
 }
 
@@ -50,7 +50,7 @@ internal class InstructionStatement : Statement
 	{
 		StringBuilder sb = new();
 
-		sb.Append($"{Location}\t{Instruction}");
+		sb.Append($"{Location} {Instruction}");
 
 		if (ManualSize is not null)
 		{
@@ -89,7 +89,7 @@ internal class DirectiveStatement : Statement
 	{
 		StringBuilder sb = new();
 
-		sb.Append($"{Location}\t{Directive}");
+		sb.Append($"{Location} {Directive}");
 
 		sb.Append(' ');
 
@@ -116,6 +116,6 @@ internal class EndOfFileStatement : Statement
 
 	public override string ToString()
 	{
-		return $"{Location}\tEOF";
+		return $"{Location} EOF";
 	}
 }

@@ -59,7 +59,7 @@ internal class SymbolToken : Token
 
 	public override string ToString()
 	{
-		return $"{Location}\tSymbol: {Type}";
+		return $"{Location} Symbol: {Type}";
 	}
 }
 
@@ -80,7 +80,7 @@ internal class IdentifierToken : Token
 
 	public override string ToString()
 	{
-		return $"{Location}\tIdentifier: {Lexeme}";
+		return $"{Location} Identifier: {Lexeme}";
 	}
 }
 
@@ -103,7 +103,7 @@ internal class NumberToken : Token
 
 	public override string ToString()
 	{
-		return $"{Location}\tNumber: {Lexeme} (0x{Value:X})";
+		return $"{Location} Number: {Lexeme} (0x{Value:X})";
 	}
 }
 
@@ -126,6 +126,6 @@ internal class StringToken : Token
 
 	public override string ToString()
 	{
-		return $"{Location}\tString: {Lexeme}";
+		return $"{Location} String: {Lexeme}";
 	}
 }

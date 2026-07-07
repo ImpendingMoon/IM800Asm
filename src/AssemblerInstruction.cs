@@ -25,7 +25,7 @@ internal partial class Assembler
 				{
 					result.AddError(
 						"Assembler",
-						$"{st.Location}\tinvalid operand for instruction {st.Instruction}"
+						$"{st.Location} invalid operand for instruction {st.Instruction}"
 					);
 				}
 			}
@@ -52,7 +52,7 @@ internal partial class Assembler
 					{
 						result.AddError(
 							"Assembler",
-							$"{st.Location}\tinvalid operand for instruction {st.Instruction}"
+							$"{st.Location} invalid operand for instruction {st.Instruction}"
 						);
 					}
 				}
@@ -117,7 +117,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{st.Location}\tcannot use a direct destination and immediate source together"
+				$"{st.Location} cannot use a direct destination and immediate source together"
 			);
 		}
 
@@ -149,7 +149,7 @@ internal partial class Assembler
 
 		if (st.ManualSize is not null)
 		{
-			result.AddError("Assembler", $"{st.Location}\tLEA does not support a size suffix");
+			result.AddError("Assembler", $"{st.Location} LEA does not support a size suffix");
 		}
 
 		Operand destOperand = st.Operands[0];
@@ -620,13 +620,13 @@ internal partial class Assembler
 						function = 0b00000101;
 						break;
 					default:
-						result.AddError("Assembler", $"{st.Location}\tIM mode must be 1 or 2");
+						result.AddError("Assembler", $"{st.Location} IM mode must be 1 or 2");
 						break;
 				}
 			}
 			else
 			{
-				result.AddError("Assembler", $"{st.Location}\tIM mode must be 1 or 2");
+				result.AddError("Assembler", $"{st.Location} IM mode must be 1 or 2");
 			}
 		}
 		else if (
@@ -1015,7 +1015,7 @@ internal partial class Assembler
 
 		if (!entry.AllowedSizes.Contains(result.ResultObject))
 		{
-			result.AddError("Assembler", $"{st.Location}\tinvalid size for instruction {st.Instruction}");
+			result.AddError("Assembler", $"{st.Location} invalid size for instruction {st.Instruction}");
 		}
 
 		// If there is a meaningful size and the instruction cannot have mixed instruction sizes, check that every
@@ -1033,7 +1033,7 @@ internal partial class Assembler
 					{
 						result.AddError(
 							"Assembler",
-							$"{ro.Location}\tcannot use wide register in {result.ResultObject}-sized instruction"
+							$"{ro.Location} cannot use wide register in {result.ResultObject}-sized instruction"
 						);
 						// Only want one error per instruction here
 						break;
@@ -1045,7 +1045,7 @@ internal partial class Assembler
 					{
 						result.AddError(
 							"Assembler",
-							$"{ro.Location}\tcannot use narrow register in {result.ResultObject}-sized instruction"
+							$"{ro.Location} cannot use narrow register in {result.ResultObject}-sized instruction"
 						);
 						// Only want one error per instruction here
 						break;
@@ -1319,7 +1319,7 @@ internal partial class Assembler
 			Token firstToken = operand.ExpressionTokens[0];
 			result.AddWarning(
 				"Assembler",
-				$"{firstToken.Location}\trelative value {relative} truncated to Signed {size} {truncated}"
+				$"{firstToken.Location} relative value {relative} truncated to Signed {size} {truncated}"
 			);
 		}
 
@@ -1365,7 +1365,7 @@ internal partial class Assembler
 		{
 			result.AddError(
 				"Assembler",
-				$"{operand.Location}\tblock instructions only support byte and word sizes"
+				$"{operand.Location} block instructions only support byte and word sizes"
 			);
 			return result;
 		}

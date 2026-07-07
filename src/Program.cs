@@ -89,11 +89,11 @@ internal class Program
 		{
 			if (kvp.Value > 0)
 			{
-				Console.WriteLine($"{kvp.Key}:\t{kvp.Value:X8}");
+				Console.WriteLine($"{kvp.Key}: {kvp.Value:X8}");
 			}
 			else
 			{
-				Console.WriteLine($"{kvp.Key}:\t{kvp.Value}");
+				Console.WriteLine($"{kvp.Key}: {kvp.Value}");
 			}
 		}
 
