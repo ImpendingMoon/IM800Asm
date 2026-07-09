@@ -12,6 +12,12 @@ internal class Program
 			return;
 		}
 
+		if (string.Equals(args[0], "-test", StringComparison.OrdinalIgnoreCase))
+		{
+			RunTests(args[1]);
+			return;
+		}
+
 		string sourceFilePath = args[0];
 		sourceFilePath = sourceFilePath.Trim('"');
 
@@ -112,5 +118,11 @@ internal class Program
 		// 	Console.WriteLine(statement);
 		// }
 		// Console.WriteLine();
+	}
+
+	private static void RunTests(string fileName)
+	{
+		List<TestCase> testCases = Tester.ParseTestCases(fileName);
+		Tester.Test(testCases);
 	}
 }

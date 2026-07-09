@@ -310,7 +310,7 @@ internal partial class Assembler
 		var destRegister = (RegisterOperand)st.Operands[0];
 		int destRegisterSelector = GetRegisterSelectorBits(destRegister.Register);
 
-		Result<int> srcOperandResult = GetOperandSelector(
+		Result<int> srcOperandResult = GetSourceOperandSelector(
 			st,
 			out long? immediateValue,
 			out Constants.Size immediateSize,
@@ -1073,7 +1073,7 @@ internal partial class Assembler
 	/// <param name="displacementValue">value of the displacement expression, if applicable</param>
 	/// <returns>result containing the selector bits</returns>
 	/// <exception cref="Exception">on unsupported operand type</exception>
-	private Result<int> GetOperandSelector(
+	private Result<int> GetSourceOperandSelector(
 		InstructionStatement st,
 		out long? immediateValue,
 		out Constants.Size immediateSize,
