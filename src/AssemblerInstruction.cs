@@ -310,7 +310,12 @@ internal partial class Assembler
 		var destRegister = (RegisterOperand)st.Operands[0];
 		int destRegisterSelector = GetRegisterSelectorBits(destRegister.Register);
 
-		Result<int> srcOperandResult = GetOperandSelector(st, out long? immediateValue, out long? _);
+		Result<int> srcOperandResult = GetOperandSelector(
+			st,
+			out long? immediateValue,
+			out Constants.Size immediateSize,
+			out long? _
+		);
 		result.Combine(srcOperandResult);
 		int srcRegisterSelector = srcOperandResult.ResultObject;
 
@@ -322,7 +327,7 @@ internal partial class Assembler
 
 		if (immediateValue is not null)
 		{
-			EmitValue(immediateValue.Value, st.FinalSize);
+			EmitValue(immediateValue.Value, immediateSize);
 		}
 
 		return result;
@@ -358,6 +363,7 @@ internal partial class Assembler
 
 		int registerSelector;
 		long? immediateValue = null;
+		Constants.Size immediateSize = default;
 
 		switch (otherOperand)
 		{
@@ -368,7 +374,7 @@ internal partial class Assembler
 			}
 			case ExpressionOperand eo:
 			{
-				Result<int> immResult = GetImmediateOperand(st, eo, out immediateValue);
+				Result<int> immResult = GetImmediateOperand(st, eo, out immediateValue, out immediateSize);
 				result.Combine(immResult);
 				registerSelector = immResult.ResultObject;
 				break;
@@ -396,7 +402,7 @@ internal partial class Assembler
 
 		if (immediateValue is not null)
 		{
-			EmitValue(immediateValue.Value, st.FinalSize);
+			EmitValue(immediateValue.Value, immediateSize);
 		}
 
 		return result;
@@ -412,6 +418,7 @@ internal partial class Assembler
 
 		int registerSelector;
 		long? immediateValue = null;
+		Constants.Size immediateSize = default;
 
 		switch (st.Operands[0])
 		{
@@ -422,7 +429,7 @@ internal partial class Assembler
 			}
 			case ExpressionOperand eo:
 			{
-				Result<int> immResult = GetImmediateOperand(st, eo, out immediateValue);
+				Result<int> immResult = GetImmediateOperand(st, eo, out immediateValue, out immediateSize);
 				result.Combine(immResult);
 				registerSelector = immResult.ResultObject;
 				break;
@@ -439,7 +446,7 @@ internal partial class Assembler
 
 		if (immediateValue is not null)
 		{
-			EmitValue(immediateValue.Value, st.FinalSize);
+			EmitValue(immediateValue.Value, immediateSize);
 		}
 
 		return result;
@@ -1069,12 +1076,14 @@ internal partial class Assembler
 	private Result<int> GetOperandSelector(
 		InstructionStatement st,
 		out long? immediateValue,
+		out Constants.Size immediateSize,
 		out long? displacementValue
 	)
 	{
 		Result<int> result = new(0);
 
 		immediateValue = null;
+		immediateSize = Constants.Size.Unsized;
 		displacementValue = null;
 
 		switch (st.Operands[1])
@@ -1086,7 +1095,7 @@ internal partial class Assembler
 			}
 			case ExpressionOperand eo:
 			{
-				result = GetImmediateOperand(st, eo, out immediateValue);
+				result = GetImmediateOperand(st, eo, out immediateValue, out immediateSize);
 				break;
 			}
 			case IndirectRegisterOperand iro:
@@ -1112,12 +1121,11 @@ internal partial class Assembler
 	private Result<int> GetImmediateOperand(
 		InstructionStatement st,
 		ExpressionOperand operand,
-		out long? immediateValue
+		out long? immediateValue,
+		out Constants.Size immediateSize
 	)
 	{
 		Result<int> result = new(0b111);
-
-		Constants.Size immediateSize;
 
 		if (Constants.BitAndShiftInstructions.Contains(st.Instruction))
 		{
