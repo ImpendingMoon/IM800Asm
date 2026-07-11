@@ -163,6 +163,7 @@ internal partial class Assembler
 			return result;
 		}
 
+		result.ResultObject = spaceEvalResult.ResultObject;
 		st.Length = spaceEvalResult.ResultObject;
 		return result;
 	}

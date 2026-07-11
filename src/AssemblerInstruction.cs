@@ -83,7 +83,14 @@ internal partial class Assembler
 		// If it has an immediate operand, add that
 		if (st.Operands[1] is ExpressionOperand)
 		{
-			result.ResultObject += GetSizeByteCount(sizeResult.ResultObject);
+			if (Constants.BitAndShiftInstructions.Contains(st.Instruction))
+			{
+				result.ResultObject += GetSizeByteCount(Constants.Size.Byte);
+			}
+			else
+			{
+				result.ResultObject += GetSizeByteCount(sizeResult.ResultObject);
+			}
 		}
 
 		st.Length = result.ResultObject;
@@ -130,7 +137,14 @@ internal partial class Assembler
 		// If it has an immediate operand, add that
 		if (st.Operands[1] is ExpressionOperand)
 		{
-			result.ResultObject += GetSizeByteCount(sizeResult.ResultObject);
+			if (Constants.BitAndShiftInstructions.Contains(st.Instruction))
+			{
+				result.ResultObject += GetSizeByteCount(Constants.Size.Byte);
+			}
+			else
+			{
+				result.ResultObject += GetSizeByteCount(sizeResult.ResultObject);
+			}
 		}
 
 		st.Length = result.ResultObject;

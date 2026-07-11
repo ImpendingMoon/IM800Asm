@@ -70,6 +70,8 @@ internal partial class Assembler
 
 		foreach (Statement st in _statements)
 		{
+			st.MeasuredLocationCounter = _locationCounter;
+
 			if (st is LabelStatement ls)
 			{
 				if (TryDefineSymbol(ls.Text, _locationCounter))
@@ -140,6 +142,8 @@ internal partial class Assembler
 
 		foreach (Statement st in _statements)
 		{
+			Debug.Assert(st.MeasuredLocationCounter == _locationCounter);
+
 			if (st is LabelStatement ls)
 			{
 				if (!ls.Text.StartsWith('.'))
@@ -169,7 +173,7 @@ internal partial class Assembler
 						Constants.InstructionFormat.M => EmitFormatM(inst, entry),
 						Constants.InstructionFormat.SB => EmitFormatSB(inst, entry),
 						Constants.InstructionFormat.BLK => EmitFormatBLK(inst, entry),
-						_ => throw new Exception($"Unexpected instruction format {entry.InstructionFormat} in pass 1"),
+						_ => throw new Exception($"Unexpected instruction format {entry.InstructionFormat} in pass 2"),
 					};
 
 					result.Combine(instructionResult);

@@ -6,6 +6,9 @@ internal class Statement
 {
 	public Location Location { get; set; }
 
+	// Used to detect differences between pass 1 and pass 2
+	public long MeasuredLocationCounter { get; set; }
+
 	// Used for listing files
 	public long FileOffset { get; set; }
 	public long Length { get; set; }
