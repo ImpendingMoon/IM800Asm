@@ -258,7 +258,7 @@ internal partial class Assembler
 		result.Combine(sizeResult);
 		st.FinalSize = sizeResult.ResultObject;
 
-		if (st.Instruction == Constants.Instruction.RST)
+		if (st.Instruction == Constants.Instruction.RST || st.Instruction == Constants.Instruction.BKPT)
 		{
 			result.ResultObject += GetSizeByteCount(Constants.Size.Byte);
 		}
@@ -608,7 +608,7 @@ internal partial class Assembler
 		long? extraValue = null;
 		Constants.Size extraSize = Constants.Size.Unsized;
 
-		if (st.Instruction == Constants.Instruction.RST)
+		if (st.Instruction == Constants.Instruction.RST || st.Instruction == Constants.Instruction.BKPT)
 		{
 			Debug.Assert(st.Operands.Count == 1 && st.Operands[0] is ExpressionOperand);
 			ExpressionOperand eo = (ExpressionOperand)st.Operands[0];

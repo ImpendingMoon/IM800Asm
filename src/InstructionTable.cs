@@ -869,6 +869,21 @@ internal class InstructionTable
 		[Constants.Instruction.BTST] = MakeStandardBLKEntries(0b0000, 0b010),
 		[Constants.Instruction.BIN] = MakeStandardBLKEntries(0b0000, 0b011),
 		[Constants.Instruction.BOUT] = MakeStandardBLKEntries(0b0000, 0b100),
+		// CUSTOM
+		[Constants.Instruction.BKPT] = [
+			new Entry(
+				[
+					new OperandSlot(Constants.AcceptedOperandType.Immediate),
+				],
+				Constants.InstructionFormat.M,
+				[
+					Constants.Size.Unsized,
+				],
+				Constants.Size.Unsized,
+				0b1111,
+				0b00000000
+			),
+		],
 	};
 
 	public class Entry

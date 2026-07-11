@@ -66,6 +66,7 @@ internal static class Constants
 		NOP, JP, JR, DJNZ, JAZ, JANZ, CALL, CR, RET, RST, SCF, CCF,
 		EI, DI, IM, RETI, RETN, HALT,
 		BLD, BCP, BTST, BIN, BOUT,
+		BKPT,
 	}
 
 	public enum Directive
