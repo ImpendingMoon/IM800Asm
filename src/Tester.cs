@@ -6,7 +6,7 @@ namespace IM800Asm;
 internal class TestCase
 {
 	public string Name { get; set; } = string.Empty;
-	public string Source { get; set; } = string.Empty;
+	public string[] Source { get; set; } = [];
 	public string ExpectedOutputHex { get; set; } = string.Empty;
 
 	[JsonIgnore]
@@ -26,7 +26,7 @@ internal class TestResult
 	}
 
 	public string Name { get; set; } = string.Empty;
-	public string Source { get; set; } = string.Empty;
+	public string[] Source { get; set; } = [];
 	public byte[] ExpectedOutput { get; set; } = [];
 	public List<byte> ActualOutput { get; set; } = [];
 	public Result Result { get; set; } = new();

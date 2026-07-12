@@ -11,7 +11,7 @@ internal class Lexer
 	private SourceContext _currentContext;
 	private List<Token> _tokens = [];
 
-	public Lexer(string source, string filePath)
+	public Lexer(string[] source, string filePath)
 	{
 		_currentContext = new(filePath, source);
 		_activeIncludes.Add(filePath);
@@ -301,7 +301,7 @@ internal class Lexer
 			return false;
 		}
 
-		int start = _currentContext.Position;
+		int startColumn = _currentContext.Location.Column;
 
 		Advance();
 		c = Current();
@@ -329,7 +329,7 @@ internal class Lexer
 			}
 
 			result.ResultObject = MakeNumberToken(
-				_currentContext.Source[start.._currentContext.Position],
+				_currentContext.Source[_currentContext.Location.Line][startColumn.._currentContext.Location.Column],
 				parseResult.ResultObject
 			);
 		}
@@ -350,7 +350,6 @@ internal class Lexer
 
 		List<byte> stringValue = [];
 
-		int startPosition = _currentContext.Position;
 		Location startLocation = _currentContext.Location;
 
 		Advance();
@@ -388,7 +387,7 @@ internal class Lexer
 
 		result.ResultObject = MakeStringToken(
 			startLocation,
-			_currentContext.Source[startPosition.._currentContext.Position],
+			_currentContext.Source[_currentContext.Location.Line][startLocation.Column.._currentContext.Location.Column],
 			stringValue
 		);
 
@@ -484,7 +483,7 @@ internal class Lexer
 			return false;
 		}
 
-		int start = _currentContext.Position;
+		int startColumn = _currentContext.Location.Column;
 		Location startLocation = _currentContext.Location;
 
 		while (IsIdentifierChar(c))
@@ -495,7 +494,7 @@ internal class Lexer
 
 		result.ResultObject = MakeIdentifierToken(
 			startLocation,
-			_currentContext.Source[start.._currentContext.Position]
+			_currentContext.Source[_currentContext.Location.Line][startColumn.._currentContext.Location.Column]
 		);
 
 		return true;
@@ -662,10 +661,10 @@ internal class Lexer
 			return result;
 		}
 
-		string includedSource;
+		string[] includedSource;
 		try
 		{
-			includedSource = File.ReadAllText(resolvedPath);
+			includedSource = File.ReadAllLines(resolvedPath);
 		}
 		catch (Exception ex)
 		{
@@ -720,20 +719,37 @@ internal class Lexer
 
 	private char Current()
 	{
-		return _currentContext.Position >= _currentContext.Source.Length
-			? '\0' : _currentContext.Source[_currentContext.Position];
+		if (_currentContext.Location.Line >= _currentContext.Source.Length)
+		{
+			return '\0';
+		}
+
+		if (_currentContext.Location.Column >= _currentContext.Source[_currentContext.Location.Line].Length)
+		{
+			return '\n';
+		}
+
+		return _currentContext.Source[_currentContext.Location.Line][_currentContext.Location.Column];
 	}
 
 	private char Next()
 	{
-		return _currentContext.Position + 1 >= _currentContext.Source.Length
-			? '\0' : _currentContext.Source[_currentContext.Position + 1];
+		if (_currentContext.Location.Line >= _currentContext.Source.Length)
+		{
+			return '\0';
+		}
+
+		if (_currentContext.Location.Column + 1 >= _currentContext.Source[_currentContext.Location.Line].Length)
+		{
+			return '\n';
+		}
+
+		return _currentContext.Source[_currentContext.Location.Line][_currentContext.Location.Column + 1];
 	}
 
 	private void Advance(int count = 1)
 	{
 		_currentContext.Location.Column += count;
-		_currentContext.Position += count;
 	}
 
 	private SymbolToken MakeSymbolToken(Constants.TokenType type)

@@ -103,7 +103,7 @@ internal static class Program
 
 		Stopwatch stopwatch = Stopwatch.StartNew();
 
-		string source = File.ReadAllText(inputFile);
+		string[] source = File.ReadAllLines(inputFile);
 
 		Result result = new();
 

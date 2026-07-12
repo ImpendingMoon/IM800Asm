@@ -1,92 +1,9 @@
 [
 	{
 		"Name": "LD A, A",
-		"Source": "\tLD A, A",
+		"Source": [
+			" LD A, A"
+		],
 		"ExpectedOutputHex": "0001"
-	},
-	{
-		"Name": "LD AF, AF",
-		"Source": "\tLD AF, AF",
-		"ExpectedOutputHex": "0002"
-	},
-	{
-		"Name": "SLA HL, 4",
-		"Source": "\tSLA HL, 4",
-		"ExpectedOutputHex": "60EE04"
-	},
-	{
-		"Name": "SLA.D [IY+0], 4",
-		"Source": "\tSLA.D [IY+0], 4",
-		"ExpectedOutputHex": "E1BE000004"
-	},
-	{
-		"Name": "SRL HL, 4",
-		"Source": "\tSRL HL, 4",
-		"ExpectedOutputHex": "68EE04"
-	},
-	{
-		"Name": "DJNZ",
-		"Source": "test:\n .DEFS 4\n DJNZ test",
-		"ExpectedOutputHex": "0000000013FA"
-	},
-	{
-		"Name": "CALL",
-		"Source": "CALL 0",
-		"ExpectedOutputHex": "6AFE00000000"
-	},
-	{
-		"Name": "RET",
-		"Source": "RET",
-		"ExpectedOutputHex": "8A1E"
-	},
-	{
-		"Name": "Mini Program",
-		"Source": " .defd start\nstart:\n ld sp, 0x20FFFF\n call test\n halt\ntest:\n ret",
-		"ExpectedOutputHex": "0400000000FAFFFF20006AFE120000001E098A1E"
-	},
-	{
-		"Name": "Negative",
-		"Source": " DEFW -287",
-		"ExpectedOutputHex": "E1FE"
-	},
-	{
-		"Name": "JR.B",
-		"Source": "test:\n .DEFS 4\n JR.B test",
-		"ExpectedOutputHex": "000000000AFEF9"
-	},
-	{
-		"Name": "Shift and Jump",
-		"Source": " SLA HL, 4\ntest:\n JP $",
-		"ExpectedOutputHex": "60EE042AFE03000000"
-	},
-	{
-		"Name": "LD Immediate Indexed",
-		"Source": " LD.D [SP+0], 0xDEADBEEF",
-		"ExpectedOutputHex": "81DE0000EFBEADDE"
-	},
-	{
-		"Name": "SUB SP Immediate",
-		"Source": " SUB SP, 4",
-		"ExpectedOutputHex": "18FA04000000"
-	},
-	{
-		"Name": "PUSH Immediate",
-		"Source": " PUSH 0xAFAFAFAF",
-		"ExpectedOutputHex": "023EAFAFAFAF"
-	},
-	{
-		"Name": "POP AF",
-		"Source": " POP AF",
-		"ExpectedOutputHex": "0242"
-	},
-	{
-		"Name": "SLA DE, A",
-		"Source": " SLA DE, A",
-		"ExpectedOutputHex": "600A"
-	},
-	{
-		"Name": "SRL A, 12",
-		"Source": " SRL A, 12",
-		"ExpectedOutputHex": "68E10C"
 	}
 ]

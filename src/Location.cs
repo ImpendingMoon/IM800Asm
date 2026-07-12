@@ -15,6 +15,7 @@ internal struct Location
 
 	public override string ToString()
 	{
-		return $"{FilePath}:{Line}:{Column}:";
+		// Used for indexing (0-indexed) and printing (1-indexed)
+		return $"{FilePath}:{Line + 1}:{Column + 1}:";
 	}
 }
