@@ -68,5 +68,25 @@
 		"Name": "SUB SP Immediate",
 		"Source": " SUB SP, 4",
 		"ExpectedOutputHex": "18FA04000000"
+	},
+	{
+		"Name": "PUSH Immediate",
+		"Source": " PUSH 0xAFAFAFAF",
+		"ExpectedOutputHex": "023EAFAFAFAF"
+	},
+	{
+		"Name": "POP AF",
+		"Source": " POP AF",
+		"ExpectedOutputHex": "0242"
+	},
+	{
+		"Name": "SLA DE, A",
+		"Source": " SLA DE, A",
+		"ExpectedOutputHex": "600A"
+	},
+	{
+		"Name": "SRL A, 12",
+		"Source": " SRL A, 12",
+		"ExpectedOutputHex": "68E10C"
 	}
 ]

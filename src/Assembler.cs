@@ -22,9 +22,9 @@ internal partial class Assembler
 	/// <summary>
 	/// Dictionary of symbol names to values
 	/// </summary>
-	private Dictionary<string, long> _symbolTable;
+	private Dictionary<string, Symbol> _symbolTable;
 
-	public IReadOnlyDictionary<string, long> SymbolTable => _symbolTable;
+	public IReadOnlyDictionary<string, Symbol> SymbolTable => _symbolTable;
 
 	/// <summary>
 	/// Used by .EQU to redefine the last defined symbol
@@ -42,7 +42,7 @@ internal partial class Assembler
 		_currentScope = string.Empty;
 		_symbolTable = [];
 		_lastDefinedSymbol = string.Empty;
-		_evaluator = new(GetSymbol);
+		_evaluator = new(GetSymbolValue);
 		_data = [];
 	}
 
@@ -209,7 +209,7 @@ internal partial class Assembler
 			return false;
 		}
 
-		_symbolTable[qualifiedName] = value;
+		_symbolTable[qualifiedName] = new(Constants.SymbolType.Label, qualifiedName, value);
 		return true;
 	}
 
@@ -218,10 +218,10 @@ internal partial class Assembler
 	/// </summary>
 	/// <param name="symbol">Symbol name. Will be expanded to fully qualified name.</param>
 	/// <param name="value"></param>
-	private void RedefineSymbol(string symbol, long value)
+	private void RedefineSymbolAsEQU(string symbol, long value)
 	{
 		string qualifiedName = GetQualifiedName(symbol);
-		_symbolTable[qualifiedName] = value;
+		_symbolTable[qualifiedName] = new(Constants.SymbolType.EQU, qualifiedName, value);
 	}
 
 	/// <summary>
@@ -229,7 +229,7 @@ internal partial class Assembler
 	/// </summary>
 	/// <param name="symbol">Symbol name. Will be expanded to fully qualified name.</param>
 	/// <returns>value, or null if not found</returns>
-	private long? GetSymbol(string symbol)
+	private long? GetSymbolValue(string symbol)
 	{
 		string qualifiedName = GetQualifiedName(symbol);
 
@@ -238,7 +238,7 @@ internal partial class Assembler
 			return null;
 		}
 
-		return _symbolTable[qualifiedName];
+		return _symbolTable[qualifiedName].Value;
 	}
 
 	/// <summary>

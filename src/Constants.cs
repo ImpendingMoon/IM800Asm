@@ -192,4 +192,10 @@ internal static class Constants
 		Instruction.SRA,
 		Instruction.SRL,
 	];
+
+	public enum SymbolType
+	{
+		Label,
+		EQU,
+	}
 }

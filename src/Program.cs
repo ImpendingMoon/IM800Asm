@@ -2,122 +2,207 @@
 
 namespace IM800Asm;
 
-internal class Program
+internal static class Program
 {
-	private static void Main(string[] args)
+	private static int Main(string[] args)
 	{
-		if (args.Length < 2)
+		if (args.Length == 0)
 		{
-			Console.WriteLine("Usage: IM800Asm <source file> <output file>");
-			return;
+			PrintUsage();
+			return 1;
 		}
 
-		if (string.Equals(args[0], "-test", StringComparison.OrdinalIgnoreCase))
+		string? inputFile = null;
+		string? outputFile = null;
+		string? symbolFile = null;
+		string? listingFile = null;
+
+		for (int i = 0; i < args.Length; i++)
 		{
-			RunTests(args[1]);
-			return;
+			switch (args[i])
+			{
+				case "--help":
+				case "-h":
+					PrintUsage();
+					return 0;
+
+				case "--test":
+					if (++i >= args.Length)
+					{
+						Console.Error.WriteLine("error: --test requires a file.");
+						return 1;
+					}
+
+					RunTests(ExpandPath(args[i]));
+					return 0;
+
+				case "-o":
+					if (++i >= args.Length)
+					{
+						Console.Error.WriteLine("error: -o requires a filename.");
+						return 1;
+					}
+
+					outputFile = ExpandPath(args[i]);
+					break;
+
+				case "-s":
+					if (++i >= args.Length)
+					{
+						Console.Error.WriteLine("error: -s requires a filename.");
+						return 1;
+					}
+
+					symbolFile = ExpandPath(args[i]);
+					break;
+
+				case "-l":
+					if (++i >= args.Length)
+					{
+						Console.Error.WriteLine("error: -l requires a filename.");
+						return 1;
+					}
+
+					listingFile = ExpandPath(args[i]);
+					break;
+
+				default:
+					if (args[i].StartsWith('-'))
+					{
+						Console.Error.WriteLine($"error: unknown option '{args[i]}'.");
+						return 1;
+					}
+
+					if (inputFile != null)
+					{
+						Console.Error.WriteLine("error: multiple input files specified.");
+						return 1;
+					}
+
+					inputFile = ExpandPath(args[i]);
+					break;
+			}
 		}
 
-		string sourceFilePath = args[0];
-		sourceFilePath = sourceFilePath.Trim('"');
-
-		if (sourceFilePath.StartsWith('~'))
+		if (inputFile == null)
 		{
-			string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-			sourceFilePath = sourceFilePath.Replace("~", userFolder);
+			Console.Error.WriteLine("error: no input file specified.");
+			return 1;
 		}
 
-		if (!File.Exists(sourceFilePath))
+		if (outputFile == null)
 		{
-			Console.WriteLine($"Cannot find the file \"{sourceFilePath}\"");
-			return;
+			outputFile = Path.ChangeExtension(inputFile, ".bin");
 		}
 
-		string outputFilePath = args[1];
-		outputFilePath = outputFilePath.Trim('"');
-
-		if (outputFilePath.StartsWith('~'))
+		if (!File.Exists(inputFile))
 		{
-			string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-			outputFilePath = outputFilePath.Replace("~", userFolder);
+			Console.Error.WriteLine($"error: cannot find '{inputFile}'.");
+			return 1;
 		}
 
-		Stopwatch stopwatch = new();
-		stopwatch.Start();
+		Stopwatch stopwatch = Stopwatch.StartNew();
 
-		string source = File.ReadAllText(sourceFilePath);
+		string source = File.ReadAllText(inputFile);
 
 		Result result = new();
 
-		// Temporary driver while I develop the thing
-
-		Lexer lexer = new(source, sourceFilePath);
-
+		Lexer lexer = new(source, inputFile);
 		Result<List<Token>> tokenizeResult = lexer.Tokenize();
 		result.Combine(tokenizeResult);
 
 		Parser parser = new(tokenizeResult.ResultObject);
-
 		Result<List<Statement>> parseResult = parser.Parse();
 		result.Combine(parseResult);
 
 		Assembler assembler = new(parseResult.ResultObject);
-		Result<List<byte>> assemblerResult = assembler.Assemble();
-		result.Combine(assemblerResult);
+		Result<List<byte>> assembleResult = assembler.Assemble();
+		result.Combine(assembleResult);
+
+		stopwatch.Stop();
 
 		if (result.IsSuccess)
 		{
-			File.WriteAllBytes(outputFilePath, assemblerResult.ResultObject.ToArray());
-		}
-		stopwatch.Stop();
+			File.WriteAllBytes(outputFile, assembleResult.ResultObject.ToArray());
 
-		Console.WriteLine($"Assembled {assemblerResult.ResultObject.Count} bytes in {stopwatch.ElapsedMilliseconds / 1000.0} seconds");
-		Console.WriteLine();
-
-		Console.WriteLine("=== WARNINGS ===");
-		foreach (Result.Error warning in result.Warnings)
-		{
-			Console.WriteLine(warning);
-		}
-
-		Console.WriteLine();
-
-		Console.WriteLine("=== ERRORS ===");
-		foreach (Result.Error error in result.Errors)
-		{
-			Console.WriteLine(error);
-		}
-
-		Console.WriteLine();
-
-		Console.WriteLine("=== SYMBOLS ===");
-		foreach (var kvp in assembler.SymbolTable.OrderBy(x => x.Value))
-		{
-			if (kvp.Value > 0)
+			if (symbolFile != null)
 			{
-				Console.WriteLine($"{kvp.Key}: {kvp.Value:X8}");
+				List<string> lines = [];
+
+				foreach (var kvp in assembler.SymbolTable.OrderBy(x => x.Value.Value))
+				{
+					Symbol symbol = kvp.Value;
+					if (symbol.Type == Constants.SymbolType.Label)
+					{
+						lines.Add($"{symbol.Name}|{symbol.Type}|{symbol.Value:X8}");
+					}
+					else
+					{
+						lines.Add($"{symbol.Name}|{symbol.Type}|{symbol.Value}");
+					}
+				}
+
+				File.WriteAllLines(symbolFile, lines);
 			}
-			else
+
+			if (listingFile != null)
 			{
-				Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+				// TODO: Generate listing file.
+				Console.WriteLine("Listing file generation not yet implemented.");
 			}
+
+			Console.WriteLine(
+				$"Assembled {assembleResult.ResultObject.Count} bytes in {stopwatch.Elapsed.TotalSeconds:N3} seconds."
+			);
 		}
 
-		Console.WriteLine();
+		if (result.Warnings.Any())
+		{
+			Console.WriteLine();
+			Console.WriteLine("Warnings:");
 
-		// yum yum 18000 line output for my "test everything" source file
-		// Console.WriteLine("=== TOKENS ===");
-		// foreach (Token token in tokenizeResult.ResultObject)
-		// {
-		// 	Console.WriteLine(token);
-		// }
-		// Console.WriteLine();
-		// Console.WriteLine("=== STATEMENTS ===");
-		// foreach (Statement statement in parseResult.ResultObject)
-		// {
-		// 	Console.WriteLine(statement);
-		// }
-		// Console.WriteLine();
+			foreach (var warning in result.Warnings)
+				Console.WriteLine($"  {warning}");
+		}
+
+		if (result.Errors.Any())
+		{
+			Console.WriteLine();
+			Console.WriteLine("Errors:");
+
+			foreach (var error in result.Errors)
+				Console.WriteLine($"  {error}");
+		}
+
+		return result.IsSuccess ? 0 : 1;
+	}
+
+	private static string ExpandPath(string path)
+	{
+		path = path.Trim('"');
+
+		if (path.StartsWith('~'))
+		{
+			string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			path = Path.Combine(home, path[1..]);
+		}
+
+		return path;
+	}
+
+	private static void PrintUsage()
+	{
+		Console.WriteLine("""
+            Usage:
+              im800asm [options] <input>
+
+            Options:
+              -o <file>      Output binary file (default: <input>.bin)
+              -s <file>      Write symbol table
+              -l <file>      Write listing file (stub)
+              --test <file>  Run assembler tests
+              -h, --help     Show this help
+            """);
 	}
 
 	private static void RunTests(string fileName)

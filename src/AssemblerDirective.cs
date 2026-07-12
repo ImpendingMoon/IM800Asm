@@ -281,7 +281,7 @@ internal partial class Assembler
 		);
 		result.Combine(evaluationResult);
 
-		RedefineSymbol(_lastDefinedSymbol, evaluationResult.ResultObject);
+		RedefineSymbolAsEQU(_lastDefinedSymbol, evaluationResult.ResultObject);
 		return result;
 	}
 
