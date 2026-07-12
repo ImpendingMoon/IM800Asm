@@ -702,19 +702,8 @@ internal class Lexer
 	{
 		char c = Current();
 
-		if (c == '\r')
-		{
-			Advance();
-			c = Current();
-		}
-
-		if (c == '\n')
-		{
-			Advance();
-		}
-
 		_currentContext.Location.Line++;
-		_currentContext.Location.Column = 1;
+		_currentContext.Location.Column = 0;
 	}
 
 	private char Current()

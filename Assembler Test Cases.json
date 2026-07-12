@@ -5,5 +5,15 @@
 			" LD A, A"
 		],
 		"ExpectedOutputHex": "0001"
+	},
+	{
+		"Name": "Comment Lines",
+		"Source": [
+			";*",
+			";*",
+			"label:",
+			" LD A, A"
+		],
+		"ExpectedOutputHex": "0001"
 	}
 ]
