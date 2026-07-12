@@ -31,6 +31,11 @@ internal partial class Assembler
 	/// </summary>
 	private string _lastDefinedSymbol;
 
+	/// <summary>
+	/// Sanity check
+	/// </summary>
+	private int _bytesEmittedForCurrentStatement = 0;
+
 	private ExpressionEvaluator _evaluator;
 
 	private List<byte> _data;
@@ -101,7 +106,8 @@ internal partial class Assembler
 				{
 					Debug.Assert(entry is not null);
 
-					FixupInstruction(inst, entry);
+					Result fixupResult = FixupInstruction(inst, entry);
+					result.Combine(fixupResult);
 
 					Result<long> instructionResult = entry.InstructionFormat switch
 					{
@@ -143,6 +149,7 @@ internal partial class Assembler
 		foreach (Statement st in _statements)
 		{
 			Debug.Assert(st.MeasuredLocationCounter == _locationCounter);
+			_bytesEmittedForCurrentStatement = 0;
 
 			if (st is LabelStatement ls)
 			{
@@ -188,6 +195,10 @@ internal partial class Assembler
 				}
 
 				_lastDefinedSymbol = string.Empty;
+
+				// Things like .RESB have a length but do not emit anything
+				// This is to sanity check things emitting more than they should, mostly
+				Debug.Assert(_bytesEmittedForCurrentStatement == 0 || _bytesEmittedForCurrentStatement == st.Length);
 			}
 		}
 
@@ -262,17 +273,20 @@ internal partial class Assembler
 		{
 			case Constants.Size.Byte:
 			{
+				_bytesEmittedForCurrentStatement += 1;
 				_data.Add((byte)value);
 				break;
 			}
 			case Constants.Size.Word:
 			{
+				_bytesEmittedForCurrentStatement += 2;
 				_data.Add((byte)value);
 				_data.Add((byte)(value >> 8));
 				break;
 			}
 			case Constants.Size.Dword:
 			{
+				_bytesEmittedForCurrentStatement += 4;
 				_data.Add((byte)value);
 				_data.Add((byte)(value >> 8));
 				_data.Add((byte)(value >> 16));
@@ -281,6 +295,7 @@ internal partial class Assembler
 			}
 			case Constants.Size.Qword:
 			{
+				_bytesEmittedForCurrentStatement += 8;
 				_data.Add((byte)value);
 				_data.Add((byte)(value >> 8));
 				_data.Add((byte)(value >> 16));

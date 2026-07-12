@@ -86,6 +86,7 @@ internal partial class Assembler
 			return result;
 		}
 
+		st.FileOffset = _data.Count;
 		foreach (Operand operand in st.Operands)
 		{
 			if (operand is not ExpressionOperand eo)
@@ -198,6 +199,7 @@ internal partial class Assembler
 			}
 		}
 
+		st.FileOffset = _data.Count;
 		for (int i = 0; i < st.Length; i++)
 		{
 			EmitValue(fillByte, Constants.Size.Byte);

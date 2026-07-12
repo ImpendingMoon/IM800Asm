@@ -10,6 +10,8 @@ internal class Lexer
 	private HashSet<string> _activeIncludes = [];
 	private SourceContext _currentContext;
 	private List<Token> _tokens = [];
+	private List<SourceLine> _sourceLines = [];
+	public List<SourceLine> SourceLines => _sourceLines;
 
 	public Lexer(string[] source, string filePath)
 	{
@@ -50,6 +52,13 @@ internal class Lexer
 
 		if (c == '\0')
 		{
+			if (_currentContext.Location.Line < _currentContext.Source.Length)
+			{
+				Location sourceLineLocation = _currentContext.Location;
+				sourceLineLocation.Column = 0;
+				_sourceLines.Add(new(sourceLineLocation, _currentContext.Source[_currentContext.Location.Line]));
+			}
+
 			// If end of an included file, pop the context from the stack
 			if (_contextStack.Count > 0)
 			{
@@ -65,6 +74,10 @@ internal class Lexer
 		}
 		else if (IsNewLine(c))
 		{
+			Location sourceLineLocation = _currentContext.Location;
+			sourceLineLocation.Column = 0;
+			_sourceLines.Add(new(sourceLineLocation, _currentContext.Source[_currentContext.Location.Line]));
+
 			SymbolToken token = MakeSymbolToken(Constants.TokenType.NewLine);
 			ConsumeNewLine();
 			result.ResultObject = token;
@@ -700,8 +713,6 @@ internal class Lexer
 
 	private void ConsumeNewLine()
 	{
-		char c = Current();
-
 		_currentContext.Location.Line++;
 		_currentContext.Location.Column = 0;
 	}

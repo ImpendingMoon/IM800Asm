@@ -193,10 +193,19 @@ internal partial class Assembler
 
 	private static Result<long> MeasureFormatUR(InstructionStatement st, InstructionTable.Entry entry)
 	{
+		Debug.Assert(st.Operands.Count == 1);
+
 		Result<long> result = new(2);
 
 		Result<Constants.Size> sizeResult = GetInstructionSize(st, entry);
 		result.Combine(sizeResult);
+
+		// PUSH #
+		if (st.Operands[0] is ExpressionOperand)
+		{
+			result.ResultObject += GetSizeByteCount(sizeResult.ResultObject);
+		}
+
 		st.FinalSize = sizeResult.ResultObject;
 		st.Length = result.ResultObject;
 

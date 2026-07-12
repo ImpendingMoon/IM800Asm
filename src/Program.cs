@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text;
 
 namespace IM800Asm;
 
@@ -127,28 +128,12 @@ internal static class Program
 
 			if (symbolFile != null)
 			{
-				List<string> lines = [];
-
-				foreach (var kvp in assembler.SymbolTable.OrderBy(x => x.Value.Value))
-				{
-					Symbol symbol = kvp.Value;
-					if (symbol.Type == Constants.SymbolType.Label)
-					{
-						lines.Add($"{symbol.Name}|{symbol.Type}|{symbol.Value:X8}");
-					}
-					else
-					{
-						lines.Add($"{symbol.Name}|{symbol.Type}|{symbol.Value}");
-					}
-				}
-
-				File.WriteAllLines(symbolFile, lines);
+				WriteSymbolFile(symbolFile, assembler.SymbolTable);
 			}
 
 			if (listingFile != null)
 			{
-				// TODO: Generate listing file.
-				Console.WriteLine("Listing file generation not yet implemented.");
+				WriteListingFile(listingFile, lexer.SourceLines, parseResult.ResultObject, assembleResult.ResultObject);
 			}
 
 			Console.WriteLine(
@@ -183,8 +168,8 @@ internal static class Program
 
 		if (path.StartsWith('~'))
 		{
-			string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-			path = Path.Combine(home, path[1..]);
+			string userFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			path = path.Replace("~", userFolder);
 		}
 
 		return path;
@@ -203,6 +188,151 @@ internal static class Program
               --test <file>  Run assembler tests
               -h, --help     Show this help
             """);
+	}
+
+	private static void WriteSymbolFile(string filePath, IReadOnlyDictionary<string, Symbol> symbolTable)
+	{
+		List<string> lines = [];
+
+		foreach (var kvp in symbolTable.OrderBy(x => x.Value.Value))
+		{
+			Symbol symbol = kvp.Value;
+			if (symbol.Type == Constants.SymbolType.Label)
+			{
+				lines.Add($"{symbol.Name}|{symbol.Type}|{symbol.Value:X8}");
+			}
+			else
+			{
+				lines.Add($"{symbol.Name}|{symbol.Type}|{symbol.Value}");
+			}
+		}
+
+		File.WriteAllLines(filePath, lines);
+	}
+
+	private static void WriteListingFile(
+		string filePath,
+		List<SourceLine> sourceLines,
+		List<Statement> statements,
+		List<byte> output
+	)
+	{
+		// For every source line, find statements on that line
+		// - For every statement on that line, get all bytes from those statements
+		// - Print out address, bytes, source line
+		// - If no bytes, just print out source line
+		List<ListingEntry> listingEntries = [];
+		int currentStatement = 0;
+
+		// Both arrays must be sorted by line
+		// But since INCLUDEs exist and lines may be out of order, everything has to be added in order at each stage
+
+		int currentBaseAddress = 0;
+
+		foreach (SourceLine sourceLine in sourceLines)
+		{
+			List<byte> bytes = [];
+
+			bool hasAddress = false;
+
+			while (currentStatement < statements.Count)
+			{
+				Statement statement = statements[currentStatement];
+
+				// We've reached statements for a later source line.
+				if (statement.Location.Line > sourceLine.Location.Line)
+				{
+					break;
+				}
+
+				// First statement on this source line determines the address.
+				if (!hasAddress)
+				{
+					currentBaseAddress = (int)statement.MeasuredLocationCounter;
+					hasAddress = true;
+				}
+
+				int startIndex = (int)statement.FileOffset;
+				int endIndex = startIndex + (int)statement.Length;
+				bytes.AddRange(output[startIndex..endIndex]);
+
+				currentStatement++;
+			}
+
+			listingEntries.Add(new ListingEntry(currentBaseAddress, sourceLine, bytes));
+		}
+
+		StringBuilder sb = new();
+
+		foreach (ListingEntry entry in listingEntries)
+		{
+
+			string address = entry.BaseAddress.ToString("X8");
+
+			string primaryByteLine = string.Empty;
+			List<string> additionalByteLines = [];
+
+			const int bytesPerLine = 8;
+			// 3 chars per byte, 2 chars for end byte (no space after)
+			const int padAmount = bytesPerLine * 3 - 1;
+
+			int currentByte = 0;
+			while (currentByte < entry.Bytes.Count)
+			{
+				string byteLine = string.Join(
+					' ',
+					entry.Bytes
+						.Skip(currentByte)
+						.Take(bytesPerLine)
+						.Select(x => x.ToString("X2"))
+				);
+				byteLine = byteLine.PadRight(padAmount);
+
+				if (currentByte == 0)
+				{
+					primaryByteLine = byteLine;
+				}
+				else
+				{
+					// Pad out space not taken by address
+					byteLine = byteLine.PadLeft(padAmount + 10);
+					additionalByteLines.Add(byteLine);
+				}
+
+				currentByte += bytesPerLine;
+			}
+
+			if (primaryByteLine.Length == 0)
+			{
+				primaryByteLine = new string(' ', padAmount);
+			}
+
+			sb.Append(address);
+			sb.Append(": ");
+			sb.Append(primaryByteLine);
+			sb.Append(" ");
+			sb.AppendLine(entry.SourceLine.Source);
+			foreach (string additionalLine in additionalByteLines)
+			{
+				sb.AppendLine(additionalLine);
+			}
+		}
+
+		File.WriteAllText(filePath, sb.ToString());
+	}
+
+	private class ListingEntry
+	{
+		public ListingEntry(int baseAddress, SourceLine sourceLine, List<byte> bytes)
+		{
+			BaseAddress = baseAddress;
+			SourceLine = sourceLine;
+			Bytes = bytes;
+		}
+
+		public int BaseAddress { get; set; }
+		public SourceLine SourceLine { get; set; }
+		public List<byte> Bytes { get; set; }
 	}
 
 	private static void RunTests(string fileName)
