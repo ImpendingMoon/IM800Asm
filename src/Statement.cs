@@ -10,6 +10,7 @@ internal class Statement
 	public long MeasuredLocationCounter { get; set; }
 
 	// Used for listing files
+	public bool EmitsData { get; set; }
 	public long FileOffset { get; set; }
 	public long Length { get; set; }
 }

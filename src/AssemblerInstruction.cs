@@ -66,8 +66,8 @@ internal partial class Assembler
 
 	private static Result<long> MeasureFormatR(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		// LEA has a unique encoding and a fixed word-sized source, regardless of size
-		if (st.Instruction == Constants.Instruction.LEA)
+		// ESA has a unique encoding and a fixed word-sized source, regardless of size
+		if (st.Instruction == Constants.Instruction.ESA)
 		{
 			return MeasureLEA(st, entry);
 		}
@@ -99,8 +99,8 @@ internal partial class Assembler
 
 	private static Result<long> MeasureFormatRM(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		// LEA has a unique encoding and a fixed word-sized source, regardless of size
-		if (st.Instruction == Constants.Instruction.LEA)
+		// ESA has a unique encoding and a fixed word-sized source, regardless of size
+		if (st.Instruction == Constants.Instruction.ESA)
 		{
 			return MeasureLEA(st, entry);
 		}
@@ -151,7 +151,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	// LEA's size field is repurposed as a scale factor, not an instruction size. The destination
+	// ESA's size field is repurposed as a scale factor, not an instruction size. The destination
 	// is always a dword and the source is always a word.
 	private static Result<long> MeasureLEA(InstructionStatement st, InstructionTable.Entry entry)
 	{
@@ -163,7 +163,7 @@ internal partial class Assembler
 
 		if (st.ManualSize is not null)
 		{
-			result.AddError("Assembler", $"{st.Location} LEA does not support a size suffix");
+			result.AddError("Assembler", $"{st.Location} ESA does not support a size suffix");
 		}
 
 		Operand destOperand = st.Operands[0];
@@ -318,8 +318,8 @@ internal partial class Assembler
 
 	private Result<long> EmitFormatR(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		// LEA has a unique encoding
-		if (st.Instruction == Constants.Instruction.LEA)
+		// ESA has a unique encoding
+		if (st.Instruction == Constants.Instruction.ESA)
 		{
 			return EmitLEA(st, entry);
 		}
@@ -345,7 +345,7 @@ internal partial class Assembler
 		int instructionWord = EncodeFormatR(entry.Opcode, sizeSelector, destRegisterSelector, srcRegisterSelector);
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionWord, Constants.Size.Word);
 
 		if (immediateValue is not null)
@@ -358,8 +358,8 @@ internal partial class Assembler
 
 	private Result<long> EmitFormatRM(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		// LEA has a unique encoding
-		if (st.Instruction == Constants.Instruction.LEA)
+		// ESA has a unique encoding
+		if (st.Instruction == Constants.Instruction.ESA)
 		{
 			return EmitLEA(st, entry);
 		}
@@ -409,7 +409,7 @@ internal partial class Assembler
 		int instructionWord = EncodeFormatRM(entry.Opcode, direction, sizeSelector, registerSelector, addressRegisterSelector);
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionWord, Constants.Size.Word);
 
 		// Displacement is always emitted before an immediate value
@@ -464,7 +464,7 @@ internal partial class Assembler
 		int instructionWord = EncodeFormatUR(entry.Opcode, entry.Function, sizeSelector, registerSelector);
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionWord, Constants.Size.Word);
 
 		if (immediateValue is not null)
@@ -490,7 +490,7 @@ internal partial class Assembler
 		int instructionWord = EncodeFormatUM(entry.Opcode, entry.Function, sizeSelector, addressRegisterSelector);
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionWord, Constants.Size.Word);
 
 		if (displacementValue is not null)
@@ -534,6 +534,7 @@ internal partial class Assembler
 			int retWord = EncodeFormatB(opcode, conditionSelector, 0);
 
 			st.FileOffset = _data.Count;
+			st.EmitsData = true;
 			EmitValue(retWord, Constants.Size.Word);
 
 			return result;
@@ -598,7 +599,7 @@ internal partial class Assembler
 		int instructionWord = EncodeFormatB(opcode, conditionSelectorValue, addressRegisterSelector);
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionWord, Constants.Size.Word);
 
 		if (valueToEmit is not null)
@@ -683,7 +684,7 @@ internal partial class Assembler
 		int instructionWord = EncodeFormatM(entry.Opcode, function);
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionWord, Constants.Size.Word);
 
 		if (extraValue is not null)
@@ -710,7 +711,7 @@ internal partial class Assembler
 		int instructionByte = EncodeFormatSB(entry.Opcode);
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionByte, Constants.Size.Byte);
 
 		if (relativeValue is not null)
@@ -737,7 +738,7 @@ internal partial class Assembler
 		int instructionWord = EncodeFormatBLK(entry.Opcode, sizeSelector, incrementBit, repeatBit, entry.Function);
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionWord, Constants.Size.Word);
 
 		return result;
@@ -889,7 +890,7 @@ internal partial class Assembler
 			| (function << 12);
 	}
 
-	// ************* LEA *****************
+	// ************* ESA *****************
 
 	private Result<long> EmitLEA(InstructionStatement st, InstructionTable.Entry entry)
 	{
@@ -936,7 +937,7 @@ internal partial class Assembler
 					break;
 				}
 				default:
-					throw new Exception($"Unexpected operand type {srcOperand.GetType()} in LEA format R");
+					throw new Exception($"Unexpected operand type {srcOperand.GetType()} in ESA format R");
 			}
 
 			instructionWord = EncodeFormatR(entry.Opcode, scaleSelector, destRegisterSelector, srcRegisterSelector);
@@ -975,14 +976,14 @@ internal partial class Assembler
 					break;
 				}
 				default:
-					throw new Exception($"Unexpected operand type {otherOperand.GetType()} in LEA format RM");
+					throw new Exception($"Unexpected operand type {otherOperand.GetType()} in ESA format RM");
 			}
 
 			instructionWord = EncodeFormatRM(entry.Opcode, direction, scaleSelector, registerSelector, addressRegisterSelector);
 		}
 
 		st.FileOffset = _data.Count;
-
+		st.EmitsData = true;
 		EmitValue(instructionWord, Constants.Size.Word);
 
 		// Displacement is always emitted before an immediate value
@@ -1414,7 +1415,7 @@ internal partial class Assembler
 			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 2 }] } => GetSizeSelectorBits(Constants.Size.Word),
 			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 4 }] } => GetSizeSelectorBits(Constants.Size.Dword),
 			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 8 }] } => GetSizeSelectorBits(Constants.Size.Qword),
-			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for LEA scale selector"),
+			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for ESA scale selector"),
 		};
 	}
 }

@@ -13,7 +13,7 @@ internal partial class Assembler
 		{
 			Constants.Directive.ORG => EmitOrgDirective(st),
 			Constants.Directive.EQU => EmitEquDirective(st),
-			Constants.Directive.ALIGN => EmitAlignDirective(st),
+			Constants.Directive.ALIGN => MeasureAlignDirective(st),
 			Constants.Directive.DB or Constants.Directive.DEFB => MeasureDefineValue(st, Constants.Size.Byte),
 			Constants.Directive.DW or Constants.Directive.DEFW => MeasureDefineValue(st, Constants.Size.Word),
 			Constants.Directive.DD or Constants.Directive.DEFD => MeasureDefineValue(st, Constants.Size.Dword),
@@ -38,7 +38,7 @@ internal partial class Assembler
 		{
 			Constants.Directive.ORG => new(st.Length),
 			Constants.Directive.EQU => new(0),
-			Constants.Directive.ALIGN => new(st.Length),
+			Constants.Directive.ALIGN => EmitDefineSpace(st),
 			Constants.Directive.DB or Constants.Directive.DEFB => EmitDefineValue(st, Constants.Size.Byte),
 			Constants.Directive.DW or Constants.Directive.DEFW => EmitDefineValue(st, Constants.Size.Word),
 			Constants.Directive.DD or Constants.Directive.DEFD => EmitDefineValue(st, Constants.Size.Dword),
@@ -87,6 +87,7 @@ internal partial class Assembler
 		}
 
 		st.FileOffset = _data.Count;
+		st.EmitsData = true;
 		foreach (Operand operand in st.Operands)
 		{
 			if (operand is not ExpressionOperand eo)
@@ -200,6 +201,7 @@ internal partial class Assembler
 		}
 
 		st.FileOffset = _data.Count;
+		st.EmitsData = true;
 		for (int i = 0; i < st.Length; i++)
 		{
 			EmitValue(fillByte, Constants.Size.Byte);
@@ -287,7 +289,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<long> EmitAlignDirective(DirectiveStatement st)
+	private Result<long> MeasureAlignDirective(DirectiveStatement st)
 	{
 		Result<long> result = new(0);
 

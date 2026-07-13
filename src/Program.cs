@@ -193,7 +193,6 @@ internal static class Program
 	private static void WriteSymbolFile(string filePath, IReadOnlyDictionary<string, Symbol> symbolTable)
 	{
 		List<string> lines = [];
-
 		foreach (var kvp in symbolTable.OrderBy(x => x.Value.Value))
 		{
 			Symbol symbol = kvp.Value;
@@ -245,6 +244,8 @@ internal static class Program
 					break;
 				}
 
+				currentStatement++;
+
 				// First statement on this source line determines the address.
 				if (!hasAddress)
 				{
@@ -252,11 +253,15 @@ internal static class Program
 					hasAddress = true;
 				}
 
+				// Directives like ORG have a length but do not emit any bytes
+				if (!statement.EmitsData)
+				{
+					continue;
+				}
+
 				int startIndex = (int)statement.FileOffset;
 				int endIndex = startIndex + (int)statement.Length;
 				bytes.AddRange(output[startIndex..endIndex]);
-
-				currentStatement++;
 			}
 
 			listingEntries.Add(new ListingEntry(currentBaseAddress, sourceLine, bytes));

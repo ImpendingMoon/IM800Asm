@@ -313,7 +313,7 @@ internal class InstructionTable
 		[Constants.Instruction.XOR] = MakeStandardRRMEntries(0b01010),
 		[Constants.Instruction.CP] = MakeStandardRRMEntries(0b01011),
 		[Constants.Instruction.TST] = MakeStandardRRMEntries(0b01100),
-		[Constants.Instruction.LEA] = [
+		[Constants.Instruction.ESA] = [
 			new Entry(
 				[
 					new OperandSlot(Constants.AcceptedOperandType.WideRegister),

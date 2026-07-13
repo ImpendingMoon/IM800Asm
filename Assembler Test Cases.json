@@ -7,13 +7,10 @@
 		"ExpectedOutputHex": "0001"
 	},
 	{
-		"Name": "Comment Lines",
+		"Name": "ESA AF, A, BYTE",
 		"Source": [
-			";*",
-			";*",
-			"label:",
-			" LD A, A"
+			" ESA AF, A, BYTE"
 		],
-		"ExpectedOutputHex": "0001"
+		"ExpectedOutputHex": "4000"
 	}
 ]

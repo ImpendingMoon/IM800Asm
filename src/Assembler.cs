@@ -199,6 +199,7 @@ internal partial class Assembler
 				// Things like .RESB have a length but do not emit anything
 				// This is to sanity check things emitting more than they should, mostly
 				Debug.Assert(_bytesEmittedForCurrentStatement == 0 || _bytesEmittedForCurrentStatement == st.Length);
+				Debug.Assert(_bytesEmittedForCurrentStatement == 0 || _data.Count == st.FileOffset + st.Length);
 			}
 		}
 

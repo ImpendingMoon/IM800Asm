@@ -60,7 +60,7 @@ internal static class Constants
 
 	public enum Instruction
 	{
-		LD, EX, PUSH, POP, LEA, EXH, EXA, EXX, EXI, IN, OUT,
+		LD, EX, PUSH, POP, ESA, EXH, EXA, EXX, EXI, IN, OUT,
 		ADD, ADC, SUB, SBC, CP, INC, DEC, NEG, EXT, MLT, DIV, SDIV, DAA,
 		AND, OR, XOR, TST, CPL, BIT, SET, RES, RLC, RRC, RL, RR, SLA, SRA, SRL, RLD, RRD,
 		NOP, JP, JR, DJNZ, JAZ, JANZ, CALL, CR, RET, RST, SCF, CCF,
