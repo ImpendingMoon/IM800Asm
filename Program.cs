@@ -4,6 +4,7 @@ using IM800Asm.Assembly;
 using IM800Asm.Core;
 using IM800Asm.Lexing;
 using IM800Asm.Parsing;
+using IM800Asm.Preprocess;
 using IM800Asm.Testing;
 
 namespace IM800Asm;
@@ -113,13 +114,35 @@ internal static class Program
 
 		Result result = new();
 
-		Lexer lexer = new(source, inputFile);
+		Preprocessor preprocessor = new(inputFile, source);
+		Result<List<SourceLine>> preprocessResult = preprocessor.Preprocess();
+		result.Combine(preprocessResult);
+
+		if (!result.IsSuccess)
+		{
+			PrintErrors(result);
+			return 1;
+		}
+
+		Lexer lexer = new(preprocessResult.ResultObject);
 		Result<List<Token>> tokenizeResult = lexer.Tokenize();
 		result.Combine(tokenizeResult);
+
+		if (!result.IsSuccess)
+		{
+			PrintErrors(result);
+			return 1;
+		}
 
 		Parser parser = new(tokenizeResult.ResultObject);
 		Result<List<Statement>> parseResult = parser.Parse();
 		result.Combine(parseResult);
+
+		if (!result.IsSuccess)
+		{
+			PrintErrors(result);
+			return 1;
+		}
 
 		Assembler assembler = new(parseResult.ResultObject);
 		Result<List<byte>> assembleResult = assembler.Assemble();
@@ -127,26 +150,40 @@ internal static class Program
 
 		stopwatch.Stop();
 
-		if (result.IsSuccess)
+		if (!result.IsSuccess)
 		{
-			File.WriteAllBytes(outputFile, assembleResult.ResultObject.ToArray());
+			PrintErrors(result);
+			return 1;
+		}
 
-			if (symbolFile != null)
-			{
-				WriteSymbolFile(symbolFile, assembler.SymbolTable);
-			}
+		File.WriteAllBytes(outputFile, assembleResult.ResultObject.ToArray());
 
-			if (listingFile != null)
-			{
-				WriteListingFile(listingFile, lexer.SourceLines, parseResult.ResultObject, assembleResult.ResultObject);
-			}
+		if (symbolFile != null)
+		{
+			WriteSymbolFile(symbolFile, assembler.SymbolTable);
+		}
 
-			Console.WriteLine(
-				$"Assembled {assembleResult.ResultObject.Count} bytes in {stopwatch.Elapsed.TotalSeconds:N3} seconds."
+		if (listingFile != null)
+		{
+			WriteListingFile(
+				listingFile,
+				preprocessResult.ResultObject,
+				parseResult.ResultObject,
+				assembleResult.ResultObject
 			);
 		}
 
-		if (result.Warnings.Any())
+		Console.WriteLine(
+			$"Assembled {assembleResult.ResultObject.Count} bytes in {stopwatch.Elapsed.TotalSeconds:N3} seconds."
+		);
+
+		PrintErrors(result);
+		return 0;
+	}
+
+	private static void PrintErrors(Result result)
+	{
+		if (result.Warnings.Count > 0)
 		{
 			Console.WriteLine();
 			Console.WriteLine("Warnings:");
@@ -155,7 +192,7 @@ internal static class Program
 				Console.WriteLine($"  {warning}");
 		}
 
-		if (result.Errors.Any())
+		if (result.Errors.Count > 0)
 		{
 			Console.WriteLine();
 			Console.WriteLine("Errors:");
@@ -163,8 +200,6 @@ internal static class Program
 			foreach (var error in result.Errors)
 				Console.WriteLine($"  {error}");
 		}
-
-		return result.IsSuccess ? 0 : 1;
 	}
 
 	private static string ExpandPath(string path)

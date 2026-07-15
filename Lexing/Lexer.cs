@@ -7,17 +7,19 @@ namespace IM800Asm.Lexing;
 
 internal class Lexer
 {
-	private Stack<SourceContext> _contextStack = [];
-	private HashSet<string> _activeIncludes = [];
-	private SourceContext _currentContext;
 	private List<Token> _tokens = [];
 	private List<SourceLine> _sourceLines = [];
-	public List<SourceLine> SourceLines => _sourceLines;
+	private int _line = 0;
+	private SourceLine _currentLine = SourceLine.Empty;
 
-	public Lexer(string[] source, string filePath)
+	public Lexer(List<SourceLine> sourceLines)
 	{
-		_currentContext = new(filePath, source);
-		_activeIncludes.Add(filePath);
+		_sourceLines = sourceLines;
+
+		if (_sourceLines.Count > 0)
+		{
+			_currentLine = _sourceLines[0];
+		}
 	}
 
 	public Result<List<Token>> Tokenize()
@@ -53,32 +55,11 @@ internal class Lexer
 
 		if (c == '\0')
 		{
-			if (_currentContext.Location.Line < _currentContext.Source.Length)
-			{
-				Location sourceLineLocation = _currentContext.Location;
-				sourceLineLocation.Column = 0;
-				_sourceLines.Add(new(sourceLineLocation, _currentContext.Source[_currentContext.Location.Line]));
-			}
-
-			// If end of an included file, pop the context from the stack
-			if (_contextStack.Count > 0)
-			{
-				_activeIncludes.Remove(_currentContext.Location.FilePath);
-				_currentContext = _contextStack.Pop();
-			}
-			// Otherwise, EOF
-			else
-			{
-				SymbolToken token = MakeSymbolToken(Constants.TokenType.EndOfFile);
-				result.ResultObject = token;
-			}
+			SymbolToken token = MakeSymbolToken(Constants.TokenType.EndOfFile);
+			result.ResultObject = token;
 		}
 		else if (IsNewLine(c))
 		{
-			Location sourceLineLocation = _currentContext.Location;
-			sourceLineLocation.Column = 0;
-			_sourceLines.Add(new(sourceLineLocation, _currentContext.Source[_currentContext.Location.Line]));
-
 			SymbolToken token = MakeSymbolToken(Constants.TokenType.NewLine);
 			ConsumeNewLine();
 			result.ResultObject = token;
@@ -118,24 +99,11 @@ internal class Lexer
 
 			IdentifierToken it = identifierResult.ResultObject;
 
-			// If this is an include directive, process that
-			if (
-				string.Equals(it.Lexeme, "include", StringComparison.OrdinalIgnoreCase)
-				|| string.Equals(it.Lexeme, ".include", StringComparison.OrdinalIgnoreCase)
-			)
-			{
-				Result includeResult = TryProcessInclude(it.Location);
-				result.Combine(includeResult);
-			}
-			// Otherwise it's a normal token
-			else
-			{
-				result.ResultObject = identifierResult.ResultObject;
-			}
+			result.ResultObject = identifierResult.ResultObject;
 		}
 		else
 		{
-			result.AddError("Lexer", $"{_currentContext.Location} unexpected character {c}");
+			result.AddError("Lexer", $"{_currentLine.Location} unexpected character {c}");
 			Advance();
 		}
 
@@ -315,14 +283,14 @@ internal class Lexer
 			return false;
 		}
 
-		int startColumn = _currentContext.Location.Column;
+		int startColumn = _currentLine.Location.Column;
 
 		Advance();
 		c = Current();
 
 		if (c == '\'')
 		{
-			result.AddError("Lexer", $"{_currentContext.Location} expected character in character literal");
+			result.AddError("Lexer", $"{_currentLine.Location} expected character in character literal");
 			result.ResultObject = MakeNumberToken("''", 0);
 			Advance();
 		}
@@ -335,7 +303,7 @@ internal class Lexer
 
 			if (c != '\'')
 			{
-				result.AddError("Lexer", $"{_currentContext.Location} expected end of character literal");
+				result.AddError("Lexer", $"{_currentLine.Location} expected end of character literal");
 			}
 			else
 			{
@@ -343,7 +311,7 @@ internal class Lexer
 			}
 
 			result.ResultObject = MakeNumberToken(
-				_currentContext.Source[_currentContext.Location.Line][startColumn.._currentContext.Location.Column],
+				_currentLine.Source[startColumn.._currentLine.Location.Column],
 				parseResult.ResultObject
 			);
 		}
@@ -364,7 +332,7 @@ internal class Lexer
 
 		List<byte> stringValue = [];
 
-		Location startLocation = _currentContext.Location;
+		Location startLocation = _currentLine.Location;
 
 		Advance();
 		c = Current();
@@ -373,7 +341,7 @@ internal class Lexer
 		{
 			if (IsNewLine(c) || c == '\0')
 			{
-				result.AddError("Lexer", $"{_currentContext.Location} expected end of string literal");
+				result.AddError("Lexer", $"{_currentLine.Location} expected end of string literal");
 				break;
 			}
 
@@ -401,7 +369,7 @@ internal class Lexer
 
 		result.ResultObject = MakeStringToken(
 			startLocation,
-			_currentContext.Source[_currentContext.Location.Line][startLocation.Column.._currentContext.Location.Column],
+			_currentLine.Source[startLocation.Column.._currentLine.Location.Column],
 			stringValue
 		);
 
@@ -419,7 +387,7 @@ internal class Lexer
 			return false;
 		}
 
-		Location startLocation = _currentContext.Location;
+		Location startLocation = _currentLine.Location;
 
 		StringBuilder sb = new();
 
@@ -497,8 +465,8 @@ internal class Lexer
 			return false;
 		}
 
-		int startColumn = _currentContext.Location.Column;
-		Location startLocation = _currentContext.Location;
+		int startColumn = _currentLine.Location.Column;
+		Location startLocation = _currentLine.Location;
 
 		while (IsIdentifierChar(c))
 		{
@@ -508,7 +476,7 @@ internal class Lexer
 
 		result.ResultObject = MakeIdentifierToken(
 			startLocation,
-			_currentContext.Source[_currentContext.Location.Line][startColumn.._currentContext.Location.Column]
+			_currentLine.Source[startColumn.._currentLine.Location.Column]
 		);
 
 		return true;
@@ -525,7 +493,7 @@ internal class Lexer
 
 		char c = Current();
 
-		Location startLocation = _currentContext.Location;
+		Location startLocation = _currentLine.Location;
 
 		// Escape sequence
 		if (c == '\\')
@@ -636,67 +604,6 @@ internal class Lexer
 		return result;
 	}
 
-	private Result TryProcessInclude(Location includeLocation)
-	{
-		Result result = new();
-
-		// Expect a string literal to follow include
-		SkipWhiteSpace();
-
-		if (!TryParseStringLiteral(out Result<StringToken?> pathResult))
-		{
-			result.AddError("Lexer", $"{includeLocation} expected string literal after \"include\"");
-			return result;
-		}
-
-		Debug.Assert(pathResult.ResultObject is not null);
-
-		result.Combine(pathResult);
-		if (!pathResult.IsSuccess)
-		{
-			return result;
-		}
-
-		string rawPath = Encoding.UTF8.GetString([.. pathResult.ResultObject.StringData]);
-
-		// Resolve relative to the directory of the file doing the including, not the CWD.
-		string baseDir = Path.GetDirectoryName(_currentContext.Location.FilePath) ?? string.Empty;
-		string resolvedPath = Path.GetFullPath(Path.Combine(baseDir, rawPath));
-
-		if (!File.Exists(resolvedPath))
-		{
-			result.AddError("Lexer", $"{includeLocation} cannot find include file \"{rawPath}\"");
-			return result;
-		}
-
-		if (_activeIncludes.Contains(resolvedPath))
-		{
-			result.AddError("Lexer", $"{includeLocation} circular include of \"{rawPath}\"");
-			return result;
-		}
-
-		string[] includedSource;
-		try
-		{
-			includedSource = File.ReadAllLines(resolvedPath);
-		}
-		catch (Exception ex)
-		{
-			result.AddError("Lexer", $"{includeLocation} failed to read include file \"{rawPath}\": {ex.Message}");
-			return result;
-		}
-
-		// Save current context, overwrite it with new context
-		_contextStack.Push(_currentContext);
-		_activeIncludes.Add(resolvedPath);
-		_currentContext = new(
-			resolvedPath,
-			includedSource
-		);
-
-		return result;
-	}
-
 	private static bool IsNewLine(char c)
 	{
 		return c is '\r' or '\n';
@@ -714,48 +621,56 @@ internal class Lexer
 
 	private void ConsumeNewLine()
 	{
-		_currentContext.Location.Line++;
-		_currentContext.Location.Column = 0;
+		_line++;
+
+		if (_line < _sourceLines.Count)
+		{
+			_currentLine = _sourceLines[_line];
+		}
+		else
+		{
+			_currentLine = SourceLine.Empty;
+		}
 	}
 
 	private char Current()
 	{
-		if (_currentContext.Location.Line >= _currentContext.Source.Length)
+		if (_line >= _sourceLines.Count)
 		{
 			return '\0';
 		}
 
-		if (_currentContext.Location.Column >= _currentContext.Source[_currentContext.Location.Line].Length)
+		if (_currentLine.Location.Column >= _currentLine.Source.Length)
 		{
 			return '\n';
 		}
 
-		return _currentContext.Source[_currentContext.Location.Line][_currentContext.Location.Column];
+		return _currentLine.Source[_currentLine.Location.Column];
 	}
 
 	private char Next()
 	{
-		if (_currentContext.Location.Line >= _currentContext.Source.Length)
+		if (_line >= _sourceLines.Count)
 		{
 			return '\0';
 		}
 
-		if (_currentContext.Location.Column + 1 >= _currentContext.Source[_currentContext.Location.Line].Length)
+		if (_currentLine.Location.Column + 1 >= _currentLine.Source.Length)
 		{
 			return '\n';
 		}
 
-		return _currentContext.Source[_currentContext.Location.Line][_currentContext.Location.Column + 1];
+		return _currentLine.Source[_currentLine.Location.Column + 1];
 	}
 
 	private void Advance(int count = 1)
 	{
-		_currentContext.Location.Column += count;
+		_currentLine.Location.Column += count;
 	}
 
 	private SymbolToken MakeSymbolToken(Constants.TokenType type)
 	{
-		return new(_currentContext.Location, type);
+		return new(_currentLine.Location, type);
 	}
 
 	private IdentifierToken MakeIdentifierToken(Location location, string lexeme)
@@ -765,7 +680,7 @@ internal class Lexer
 
 	private NumberToken MakeNumberToken(string lexeme, long value)
 	{
-		return new(_currentContext.Location, lexeme, value);
+		return new(_currentLine.Location, lexeme, value);
 	}
 
 	private NumberToken MakeNumberToken(Location location, string lexeme, long value)

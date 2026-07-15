@@ -5,7 +5,7 @@ namespace IM800Asm.Parsing;
 
 internal class Statement
 {
-	public Location Location { get; set; }
+	public Location Location { get; set; } = new(string.Empty, 0, 0);
 
 	// Used to detect differences between pass 1 and pass 2
 	public long MeasuredLocationCounter { get; set; }

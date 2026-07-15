@@ -74,7 +74,6 @@ internal static class Constants
 		ORG, EQU, ALIGN,
 		DEFB, DEFW, DEFD, DEFQ, DEFS, DB, DW, DD, DQ, DS,
 		RESB, RESW, RESD, RESQ, RB, RW, RD, RQ,
-		INCLUDE,
 	}
 
 	public enum Register

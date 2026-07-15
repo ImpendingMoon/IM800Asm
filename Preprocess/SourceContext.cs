@@ -1,6 +1,6 @@
 using IM800Asm.Core;
 
-namespace IM800Asm.Lexing;
+namespace IM800Asm.Preprocess;
 
 internal class SourceContext
 {
@@ -11,6 +11,5 @@ internal class SourceContext
 	}
 
 	public string[] Source { get; set; }
-	// Not a property because Location is a struct we want to directly access
-	public Location Location;
+	public Location Location { get; set; }
 }

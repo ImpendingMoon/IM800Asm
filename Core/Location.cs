@@ -1,6 +1,6 @@
 namespace IM800Asm.Core;
 
-internal struct Location
+internal class Location
 {
 	public Location(string filePath, int line, int column)
 	{

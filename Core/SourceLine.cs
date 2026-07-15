@@ -10,4 +10,5 @@ internal class SourceLine
 
 	public Location Location { get; set; }
 	public string Source { get; set; }
+	public static SourceLine Empty => new(new(string.Empty, 0, 0), string.Empty);
 }

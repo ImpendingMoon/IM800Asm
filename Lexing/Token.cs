@@ -4,7 +4,7 @@ namespace IM800Asm.Lexing;
 
 internal class Token
 {
-	public Location Location { get; set; }
+	public Location Location { get; set; } = new(string.Empty, 0, 0);
 
 	public virtual string ToShortString()
 	{
