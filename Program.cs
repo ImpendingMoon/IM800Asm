@@ -1,5 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using IM800Asm.Assembly;
+using IM800Asm.Core;
+using IM800Asm.Lexing;
+using IM800Asm.Parsing;
+using IM800Asm.Testing;
 
 namespace IM800Asm;
 

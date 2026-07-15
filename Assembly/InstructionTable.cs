@@ -1,6 +1,9 @@
-namespace IM800Asm;
+using IM800Asm.Core;
+using IM800Asm.Parsing;
 
-internal class InstructionTable
+namespace IM800Asm.Assembly;
+
+internal static class InstructionTable
 {
 	public static bool TryResolveInstruction(InstructionStatement statement, out Entry? resolvedEntry)
 	{

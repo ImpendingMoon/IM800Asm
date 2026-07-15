@@ -1,6 +1,9 @@
 using System.Diagnostics;
+using IM800Asm.Core;
+using IM800Asm.Evaluation;
+using IM800Asm.Parsing;
 
-namespace IM800Asm;
+namespace IM800Asm.Assembly;
 
 internal partial class Assembler
 {

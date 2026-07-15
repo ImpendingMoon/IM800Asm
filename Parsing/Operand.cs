@@ -1,6 +1,8 @@
 using System.Text;
+using IM800Asm.Core;
+using IM800Asm.Lexing;
 
-namespace IM800Asm;
+namespace IM800Asm.Parsing;
 
 internal class Operand
 {

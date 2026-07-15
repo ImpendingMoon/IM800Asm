@@ -1,4 +1,6 @@
-namespace IM800Asm;
+using IM800Asm.Core;
+
+namespace IM800Asm.Lexing;
 
 internal class SourceContext
 {

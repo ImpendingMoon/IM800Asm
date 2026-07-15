@@ -1,7 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using IM800Asm.Assembly;
+using IM800Asm.Core;
+using IM800Asm.Lexing;
+using IM800Asm.Parsing;
 
-namespace IM800Asm;
+namespace IM800Asm.Testing;
 
 internal class TestCase
 {

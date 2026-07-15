@@ -1,4 +1,4 @@
-namespace IM800Asm;
+namespace IM800Asm.Core;
 
 internal class SourceLine
 {

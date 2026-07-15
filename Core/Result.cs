@@ -1,4 +1,4 @@
-﻿namespace IM800Asm;
+﻿namespace IM800Asm.Core;
 
 /// <summary>
 /// For actions where failure is an expected result.

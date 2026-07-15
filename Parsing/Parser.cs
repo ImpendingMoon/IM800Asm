@@ -1,9 +1,8 @@
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Reflection.Emit;
+using IM800Asm.Core;
+using IM800Asm.Lexing;
 
-namespace IM800Asm;
+namespace IM800Asm.Parsing;
 
 internal class Parser
 {

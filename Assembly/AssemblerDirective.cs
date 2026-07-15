@@ -1,4 +1,8 @@
-namespace IM800Asm;
+using IM800Asm.Core;
+using IM800Asm.Lexing;
+using IM800Asm.Parsing;
+
+namespace IM800Asm.Assembly;
 
 internal partial class Assembler
 {

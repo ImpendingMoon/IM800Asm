@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using IM800Asm.Core;
 
-namespace IM800Asm;
+namespace IM800Asm.Lexing;
 
 internal class Lexer
 {
