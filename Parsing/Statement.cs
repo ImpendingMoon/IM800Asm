@@ -47,7 +47,7 @@ internal class InstructionStatement : Statement
 	public List<Operand> Operands { get; set; } = [];
 
 	/// <summary>
-	/// Size as resolved by the Pass 1 Assembler
+	///     Size as resolved by the Pass 1 Assembler
 	/// </summary>
 	public Constants.Size FinalSize { get; set; }
 
@@ -67,7 +67,7 @@ internal class InstructionStatement : Statement
 
 		for (int i = 0; i < Operands.Count; i++)
 		{
-			sb.Append(Operands[i].ToString());
+			sb.Append(Operands[i]);
 
 			if (i != Operands.Count - 1)
 			{
@@ -100,7 +100,7 @@ internal class DirectiveStatement : Statement
 
 		for (int i = 0; i < Operands.Count; i++)
 		{
-			sb.Append(Operands[i].ToString());
+			sb.Append(Operands[i]);
 
 			if (i != Operands.Count - 1)
 			{

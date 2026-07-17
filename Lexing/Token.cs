@@ -53,7 +53,7 @@ internal class SymbolToken : Token
 			Constants.TokenType.Dollar => "$",
 			Constants.TokenType.NewLine => "\\n",
 			Constants.TokenType.EndOfFile => "EOF",
-			_ => Type.ToString(),
+			_ => Type.ToString()
 		};
 	}
 

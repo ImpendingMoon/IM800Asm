@@ -11,12 +11,12 @@ internal partial class Assembler
 	// since they get matched as registers in the lexer
 	private static Result FixupInstruction(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		Result result = new Result();
+		var result = new Result();
 
 		if (entry.InstructionFormat == Constants.InstructionFormat.B)
 		{
 			bool hasCondition = st.Operands.Count == 2
-				|| (st.Instruction == Constants.Instruction.RET && st.Operands.Count == 1);
+				|| st is { Instruction: Constants.Instruction.RET, Operands.Count: 1 };
 
 			if (hasCondition && st.Operands[0] is RegisterOperand ro)
 			{
@@ -72,7 +72,7 @@ internal partial class Assembler
 		// ESA has a unique encoding and a fixed word-sized source, regardless of size
 		if (st.Instruction == Constants.Instruction.ESA)
 		{
-			return MeasureLEA(st, entry);
+			return MeasureLEA(st);
 		}
 
 		Debug.Assert(st.Operands.Count >= 2);
@@ -105,7 +105,7 @@ internal partial class Assembler
 		// ESA has a unique encoding and a fixed word-sized source, regardless of size
 		if (st.Instruction == Constants.Instruction.ESA)
 		{
-			return MeasureLEA(st, entry);
+			return MeasureLEA(st);
 		}
 
 		Debug.Assert(st.Operands.Count >= 2);
@@ -156,7 +156,7 @@ internal partial class Assembler
 
 	// ESA's size field is repurposed as a scale factor, not an instruction size. The destination
 	// is always a dword and the source is always a word.
-	private static Result<long> MeasureLEA(InstructionStatement st, InstructionTable.Entry entry)
+	private static Result<long> MeasureLEA(InstructionStatement st)
 	{
 		Debug.Assert(st.Operands.Count == 3);
 
@@ -251,8 +251,7 @@ internal partial class Assembler
 
 		// If has a direct/relative address, add that
 		if (
-			(st.Operands.Count == 1 && st.Operands[0] is ExpressionOperand)
-			|| (st.Operands.Count == 2 && st.Operands[1] is ExpressionOperand)
+			st.Operands is [ExpressionOperand] or [_, ExpressionOperand]
 		)
 		{
 			result.ResultObject += GetSizeByteCount(sizeResult.ResultObject);
@@ -270,7 +269,7 @@ internal partial class Assembler
 		result.Combine(sizeResult);
 		st.FinalSize = sizeResult.ResultObject;
 
-		if (st.Instruction == Constants.Instruction.RST || st.Instruction == Constants.Instruction.BKPT)
+		if (st.Instruction is Constants.Instruction.RST or Constants.Instruction.BKPT)
 		{
 			result.ResultObject += GetSizeByteCount(Constants.Size.Byte);
 		}
@@ -278,7 +277,7 @@ internal partial class Assembler
 		{
 			Debug.Assert(st.Operands.Count == 2);
 			// LD I
-			if (st.Operands[0] is RegisterOperand ro && ro.Register == Constants.Register.I)
+			if (st.Operands[0] is RegisterOperand { Register: Constants.Register.I })
 			{
 				result.ResultObject += GetSizeByteCount(Constants.Size.Dword);
 			}
@@ -383,7 +382,11 @@ internal partial class Assembler
 		// 0 = Load (Memory to Register), 1 = Store (Register to Memory)
 		int direction = memoryIsFirst ? 1 : 0;
 
-		Result<int> addressResult = GetMemoryOperandSelector(memoryOperand, out long? displacementValue, out long? directAddressValue);
+		Result<int> addressResult = GetMemoryOperandSelector(
+			memoryOperand,
+			out long? displacementValue,
+			out long? directAddressValue
+		);
 		result.Combine(addressResult);
 		int addressRegisterSelector = addressResult.ResultObject;
 
@@ -409,7 +412,13 @@ internal partial class Assembler
 				throw new Exception($"Unexpected operand type {otherOperand.GetType()} in format RM");
 		}
 
-		int instructionWord = EncodeFormatRM(entry.Opcode, direction, sizeSelector, registerSelector, addressRegisterSelector);
+		int instructionWord = EncodeFormatRM(
+			entry.Opcode,
+			direction,
+			sizeSelector,
+			registerSelector,
+			addressRegisterSelector
+		);
 
 		st.FileOffset = _data.Count;
 		st.EmitsData = true;
@@ -486,7 +495,11 @@ internal partial class Assembler
 
 		int sizeSelector = GetSizeSelectorBits(st.FinalSize);
 
-		Result<int> addressResult = GetMemoryOperandSelector(st.Operands[0], out long? displacementValue, out long? directAddressValue);
+		Result<int> addressResult = GetMemoryOperandSelector(
+			st.Operands[0],
+			out long? displacementValue,
+			out long? directAddressValue
+		);
 		result.Combine(addressResult);
 		int addressRegisterSelector = addressResult.ResultObject;
 
@@ -558,7 +571,7 @@ internal partial class Assembler
 
 		int addressRegisterSelector;
 		long? valueToEmit = null;
-		Constants.Size valueSize = Constants.Size.Unsized;
+		var valueSize = Constants.Size.Unsized;
 
 		switch (targetOperand)
 		{
@@ -619,12 +632,12 @@ internal partial class Assembler
 
 		int function = entry.Function;
 		long? extraValue = null;
-		Constants.Size extraSize = Constants.Size.Unsized;
+		var extraSize = Constants.Size.Unsized;
 
-		if (st.Instruction == Constants.Instruction.RST || st.Instruction == Constants.Instruction.BKPT)
+		if (st.Instruction is Constants.Instruction.RST or Constants.Instruction.BKPT)
 		{
-			Debug.Assert(st.Operands.Count == 1 && st.Operands[0] is ExpressionOperand);
-			ExpressionOperand eo = (ExpressionOperand)st.Operands[0];
+			Debug.Assert(st.Operands is [ExpressionOperand]);
+			var eo = (ExpressionOperand)st.Operands[0];
 
 			Result<long> evalResult = _evaluator.Evaluate(
 				eo.ExpressionTokens,
@@ -640,10 +653,10 @@ internal partial class Assembler
 		else if (st.Instruction == Constants.Instruction.IM)
 		{
 			// IM has one entry but two opcodes
-			Debug.Assert(st.Operands.Count == 1 && st.Operands[0] is ExpressionOperand);
-			ExpressionOperand eo = (ExpressionOperand)st.Operands[0];
+			Debug.Assert(st.Operands is [ExpressionOperand]);
+			var eo = (ExpressionOperand)st.Operands[0];
 
-			if (eo.ExpressionTokens.Count == 1 && eo.ExpressionTokens[0] is NumberToken nt)
+			if (eo.ExpressionTokens is [NumberToken nt])
 			{
 				switch (nt.Value)
 				{
@@ -664,13 +677,13 @@ internal partial class Assembler
 			}
 		}
 		else if (
-			st.Instruction == Constants.Instruction.LD
-			&& st.Operands.Count == 2
-			&& st.Operands[0] is RegisterOperand ro
-			&& ro.Register == Constants.Register.I
+			st is
+			{
+				Instruction: Constants.Instruction.LD, Operands: [RegisterOperand { Register: Constants.Register.I }, _]
+			}
 		)
 		{
-			ExpressionOperand eo = (ExpressionOperand)st.Operands[1];
+			var eo = (ExpressionOperand)st.Operands[1];
 
 			Result<long> evalResult = _evaluator.Evaluate(
 				eo.ExpressionTokens,
@@ -704,7 +717,7 @@ internal partial class Assembler
 
 		long? relativeValue = null;
 
-		if (st.Operands.Count == 1 && st.Operands[0] is ExpressionOperand eo)
+		if (st.Operands is [ExpressionOperand eo])
 		{
 			Result<long> relResult = EvaluateRelativeOperand(eo, st.Length, Constants.Size.Byte);
 			result.Combine(relResult);
@@ -765,7 +778,8 @@ internal partial class Assembler
 			| (srcRegisterSelector << 13);
 	}
 
-	private static int EncodeFormatRM(
+	private static int EncodeFormatRM
+	(
 		int opcode,
 		int direction,
 		int sizeSelector,
@@ -914,7 +928,7 @@ internal partial class Assembler
 		if (entry.InstructionFormat == Constants.InstructionFormat.R)
 		{
 			// destOperand is always the wide register destination in this form
-			RegisterOperand destRegister = (RegisterOperand)destOperand;
+			var destRegister = (RegisterOperand)destOperand;
 			int destRegisterSelector = GetRegisterSelectorBits(destRegister.Register);
 
 			int srcRegisterSelector;
@@ -952,7 +966,11 @@ internal partial class Assembler
 			Operand otherOperand = memoryIsFirst ? srcOperand : destOperand;
 			int direction = memoryIsFirst ? 1 : 0;
 
-			Result<int> addressResult = GetMemoryOperandSelector(memoryOperand, out displacementValue, out directAddressValue);
+			Result<int> addressResult = GetMemoryOperandSelector(
+				memoryOperand,
+				out displacementValue,
+				out directAddressValue
+			);
 			result.Combine(addressResult);
 			int addressRegisterSelector = addressResult.ResultObject;
 
@@ -982,7 +1000,13 @@ internal partial class Assembler
 					throw new Exception($"Unexpected operand type {otherOperand.GetType()} in ESA format RM");
 			}
 
-			instructionWord = EncodeFormatRM(entry.Opcode, direction, scaleSelector, registerSelector, addressRegisterSelector);
+			instructionWord = EncodeFormatRM(
+				entry.Opcode,
+				direction,
+				scaleSelector,
+				registerSelector,
+				addressRegisterSelector
+			);
 		}
 
 		st.FileOffset = _data.Count;
@@ -1026,18 +1050,21 @@ internal partial class Assembler
 		{
 			foreach (Operand op in st.Operands)
 			{
-				if (op is RegisterOperand ro)
+				if (op is not RegisterOperand ro)
 				{
-					if (Constants.WideRegisterValues.Contains(ro.Register))
-					{
-						result.ResultObject = Constants.Size.Dword;
-					}
-					else
-					{
-						result.ResultObject = Constants.Size.Word;
-					}
-					break;
+					continue;
 				}
+
+				if (Constants.WideRegisterValues.Contains(ro.Register))
+				{
+					result.ResultObject = Constants.Size.Dword;
+				}
+				else
+				{
+					result.ResultObject = Constants.Size.Word;
+				}
+
+				break;
 			}
 		}
 
@@ -1072,7 +1099,8 @@ internal partial class Assembler
 						// Only want one error per instruction here
 						break;
 					}
-					else if (
+
+					if (
 						Constants.NarrowRegisterValues.Contains(ro.Register)
 						&& result.ResultObject == Constants.Size.Dword
 					)
@@ -1084,7 +1112,6 @@ internal partial class Assembler
 						// Only want one error per instruction here
 						break;
 					}
-
 				}
 			}
 		}
@@ -1093,14 +1120,16 @@ internal partial class Assembler
 	}
 
 	/// <summary>
-	/// Gets the selector bits and expression values of a register or memory operand
+	///     Gets the selector bits and expression values of a register or memory operand
 	/// </summary>
 	/// <param name="st">instruction statement</param>
 	/// <param name="immediateValue">value of the immediate or direct expression, if applicable</param>
+	/// <param name="immediateSize">size of the immediate or direct expression, if applicable</param>
 	/// <param name="displacementValue">value of the displacement expression, if applicable</param>
 	/// <returns>result containing the selector bits</returns>
 	/// <exception cref="Exception">on unsupported operand type</exception>
-	private Result<int> GetSourceOperandSelector(
+	private Result<int> GetSourceOperandSelector
+	(
 		InstructionStatement st,
 		out long? immediateValue,
 		out Constants.Size immediateSize,
@@ -1145,7 +1174,8 @@ internal partial class Assembler
 		return result;
 	}
 
-	private Result<int> GetImmediateOperand(
+	private Result<int> GetImmediateOperand
+	(
 		InstructionStatement st,
 		ExpressionOperand operand,
 		out long? immediateValue,
@@ -1230,7 +1260,7 @@ internal partial class Assembler
 			Constants.Register.IX => 0b100,
 			Constants.Register.IY => 0b101,
 			Constants.Register.SP => 0b110,
-			_ => 0,
+			_ => 0
 		};
 	}
 
@@ -1242,7 +1272,7 @@ internal partial class Assembler
 			Constants.Size.Word => 0b01,
 			Constants.Size.Dword => 0b10,
 			Constants.Size.Qword => 0b11,
-			_ => 0,
+			_ => 0
 		};
 	}
 
@@ -1254,7 +1284,7 @@ internal partial class Assembler
 			Constants.Size.Word => 2,
 			Constants.Size.Dword => 4,
 			Constants.Size.Qword => 8,
-			_ => 0,
+			_ => 0
 		};
 	}
 
@@ -1264,13 +1294,14 @@ internal partial class Assembler
 	}
 
 	/// <summary>
-	/// Gets the address register selector bits for a memory (Indirect/Indexed/Direct) operand
+	///     Gets the address register selector bits for a memory (Indirect/Indexed/Direct) operand
 	/// </summary>
 	/// <param name="operand">memory operand</param>
 	/// <param name="displacementValue">value of the displacement expression, if the operand is indexed</param>
 	/// <param name="directAddressValue">value of the address expression, if the operand is direct</param>
 	/// <returns>result containing the selector bits</returns>
-	private Result<int> GetMemoryOperandSelector(Operand operand, out long? displacementValue, out long? directAddressValue)
+	private Result<int> GetMemoryOperandSelector
+		(Operand operand, out long? displacementValue, out long? directAddressValue)
 	{
 		Result<int> result = new(0);
 
@@ -1314,8 +1345,8 @@ internal partial class Assembler
 	}
 
 	/// <summary>
-	/// Evaluates a PC-relative operand. The expression is evaluated as an absolute value and then subtracts the location
-	/// counter after this instruction
+	///     Evaluates a PC-relative operand. The expression is evaluated as an absolute value and then subtracts the location
+	///     counter after this instruction
 	/// </summary>
 	/// <param name="operand">the target address expression</param>
 	/// <param name="instructionLength">total length of this instruction, in bytes</param>
@@ -1339,14 +1370,14 @@ internal partial class Assembler
 		{
 			Constants.Size.Byte => (sbyte.MinValue, sbyte.MaxValue),
 			Constants.Size.Word => (short.MinValue, short.MaxValue),
-			_ => (long.MinValue, long.MaxValue),
+			_ => (long.MinValue, long.MaxValue)
 		};
 
 		long truncated = size switch
 		{
 			Constants.Size.Byte => (byte)relative,
 			Constants.Size.Word => (ushort)relative,
-			_ => relative,
+			_ => relative
 		};
 
 		if (relative < min || relative > max)
@@ -1368,7 +1399,7 @@ internal partial class Assembler
 		{
 			BlockOperand { Block: Constants.Block.I } => 1,
 			BlockOperand { Block: Constants.Block.D } => 0,
-			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for increment/decrement selector"),
+			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for increment/decrement selector")
 		};
 	}
 
@@ -1378,7 +1409,7 @@ internal partial class Assembler
 		{
 			BlockOperand { Block: Constants.Block.R } => 1,
 			BlockOperand { Block: Constants.Block.S } => 0,
-			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for repeat/single selector"),
+			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for repeat/single selector")
 		};
 	}
 
@@ -1393,7 +1424,7 @@ internal partial class Assembler
 			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 2 }] } => Constants.Size.Word,
 			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 4 }] } => Constants.Size.Dword,
 			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 8 }] } => Constants.Size.Qword,
-			_ => Constants.Size.Unsized,
+			_ => Constants.Size.Unsized
 		};
 
 		if (size is not (Constants.Size.Byte or Constants.Size.Word))
@@ -1414,11 +1445,19 @@ internal partial class Assembler
 		return operand switch
 		{
 			SizeOperand so => GetSizeSelectorBits(so.Size),
-			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 1 }] } => GetSizeSelectorBits(Constants.Size.Byte),
-			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 2 }] } => GetSizeSelectorBits(Constants.Size.Word),
-			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 4 }] } => GetSizeSelectorBits(Constants.Size.Dword),
-			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 8 }] } => GetSizeSelectorBits(Constants.Size.Qword),
-			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for ESA scale selector"),
+			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 1 }] } => GetSizeSelectorBits(
+				Constants.Size.Byte
+			),
+			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 2 }] } => GetSizeSelectorBits(
+				Constants.Size.Word
+			),
+			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 4 }] } => GetSizeSelectorBits(
+				Constants.Size.Dword
+			),
+			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 8 }] } => GetSizeSelectorBits(
+				Constants.Size.Qword
+			),
+			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for ESA scale selector")
 		};
 	}
 }

@@ -46,19 +46,17 @@ internal class OperandSlot
 			Constants.AcceptedOperandType.Immediate => operand is ExpressionOperand,
 
 			Constants.AcceptedOperandType.Condition =>
-				operand is ConditionOperand ||
-				operand is RegisterOperand
+				operand is ConditionOperand or RegisterOperand
 				{
 					Register: Constants.Register.C
 				},
 
 			Constants.AcceptedOperandType.Block =>
-				operand is BlockOperand ||
-				operand is RegisterOperand
+				operand is BlockOperand or RegisterOperand
 				{
 					Register: Constants.Register.D
-						or Constants.Register.I
-						or Constants.Register.R
+					or Constants.Register.I
+					or Constants.Register.R
 				},
 
 			Constants.AcceptedOperandType.Size => IsSizeOperand(operand),
@@ -69,7 +67,7 @@ internal class OperandSlot
 
 	private static bool IsSizeOperand(Operand operand)
 	{
-		return operand is SizeOperand || operand is ExpressionOperand
+		return operand is SizeOperand or ExpressionOperand
 		{
 			ExpressionTokens:
 			[
@@ -77,7 +75,4 @@ internal class OperandSlot
 			]
 		};
 	}
-
-
-
 }

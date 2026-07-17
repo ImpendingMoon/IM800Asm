@@ -14,9 +14,7 @@ internal class TestCase
 	public string[] Source { get; set; } = [];
 	public string ExpectedOutputHex { get; set; } = string.Empty;
 
-	[JsonIgnore]
-	public byte[] ExpectedOutput => Convert.FromHexString(ExpectedOutputHex);
-
+	[JsonIgnore] public byte[] ExpectedOutput => Convert.FromHexString(ExpectedOutputHex);
 }
 
 internal class TestResult
@@ -27,15 +25,15 @@ internal class TestResult
 		Source = testCase.Source;
 		ExpectedOutput = testCase.ExpectedOutput;
 		ActualOutput = [];
-		Result = new();
+		Result = new Result();
 	}
 
-	public string Name { get; set; } = string.Empty;
-	public string[] Source { get; set; } = [];
-	public byte[] ExpectedOutput { get; set; } = [];
-	public List<byte> ActualOutput { get; set; } = [];
-	public Result Result { get; set; } = new();
-	public bool Passed => Enumerable.SequenceEqual(ExpectedOutput, ActualOutput) && Result.IsSuccess;
+	public string Name { get; set; }
+	public string[] Source { get; set; }
+	public byte[] ExpectedOutput { get; set; }
+	public List<byte> ActualOutput { get; set; }
+	public Result Result { get; set; }
+	public bool Passed => ExpectedOutput.SequenceEqual(ActualOutput) && Result.IsSuccess;
 }
 
 internal class Tester
@@ -44,7 +42,7 @@ internal class Tester
 	{
 		string json = File.ReadAllText(fileName);
 
-		List<TestCase>? testCases = JsonSerializer.Deserialize<List<TestCase>>(json);
+		var testCases = JsonSerializer.Deserialize<List<TestCase>>(json);
 
 		if (testCases is null)
 		{
@@ -70,7 +68,7 @@ internal class Tester
 				continue;
 			}
 
-			Lexer lexer = new Lexer(preprocessResult.ResultObject);
+			var lexer = new Lexer(preprocessResult.ResultObject);
 			Result<List<Token>> lexerResult = lexer.Tokenize();
 
 			if (!testResult.Result.IsSuccess)
@@ -79,7 +77,7 @@ internal class Tester
 				continue;
 			}
 
-			Parser parser = new Parser(lexerResult.ResultObject);
+			var parser = new Parser(lexerResult.ResultObject);
 			Result<List<Statement>> parserResult = parser.Parse();
 			testResult.Result.Combine(parserResult);
 
@@ -89,7 +87,7 @@ internal class Tester
 				continue;
 			}
 
-			Assembler assembler = new Assembler(parserResult.ResultObject);
+			var assembler = new Assembler(parserResult.ResultObject);
 			Result<List<byte>> assemblerResult = assembler.Assemble();
 			testResult.Result.Combine(assemblerResult);
 
@@ -105,7 +103,10 @@ internal class Tester
 		}
 	}
 
-	private static string FormatBytes(IEnumerable<byte> bytes) => Convert.ToHexString([.. bytes]);
+	private static string FormatBytes(IEnumerable<byte> bytes)
+	{
+		return Convert.ToHexString([.. bytes]);
+	}
 
 	private static void PrintResult(TestResult testResult)
 	{
@@ -120,11 +121,12 @@ internal class Tester
 			Console.WriteLine($"\tEXPECTED: {FormatBytes(testResult.ExpectedOutput)}");
 			Console.WriteLine($"\tACTUAL  : {FormatBytes(testResult.ActualOutput)}");
 
-			foreach (var warning in testResult.Result.Warnings)
+			foreach (Result.Error warning in testResult.Result.Warnings)
 			{
 				Console.WriteLine($"\tWARN: \"{warning}\"");
 			}
-			foreach (var error in testResult.Result.Errors)
+
+			foreach (Result.Error error in testResult.Result.Errors)
 			{
 				Console.WriteLine($"\tERROR: \"{error}\"");
 			}

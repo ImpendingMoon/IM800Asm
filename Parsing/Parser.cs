@@ -4,18 +4,10 @@ using IM800Asm.Lexing;
 
 namespace IM800Asm.Parsing;
 
-internal class Parser
+internal class Parser(List<Token> tokens)
 {
-	private List<Token> _tokens;
-	private List<Statement> _statements;
+	private readonly List<Statement> _statements = [];
 	private int _position;
-
-	public Parser(List<Token> tokens)
-	{
-		_tokens = tokens;
-		_statements = [];
-		_position = 0;
-	}
 
 	public Result<List<Statement>> Parse()
 	{
@@ -26,14 +18,16 @@ internal class Parser
 			Result<Statement?> statementResult = NextStatement();
 			result.Combine(statementResult);
 
-			if (statementResult.ResultObject is not null)
+			if (statementResult.ResultObject is null)
 			{
-				_statements.Add(statementResult.ResultObject);
+				continue;
+			}
 
-				if (statementResult.ResultObject is EndOfFileStatement)
-				{
-					break;
-				}
+			_statements.Add(statementResult.ResultObject);
+
+			if (statementResult.ResultObject is EndOfFileStatement)
+			{
+				break;
 			}
 		}
 
@@ -46,11 +40,11 @@ internal class Parser
 
 		Token token = Current();
 
-		if (token is SymbolToken t && t.Type == Constants.TokenType.EndOfFile)
+		if (token is SymbolToken { Type: Constants.TokenType.EndOfFile } t)
 		{
 			result.ResultObject = new EndOfFileStatement(t.Location);
 		}
-		else if (token is SymbolToken nl && nl.Type == Constants.TokenType.NewLine)
+		else if (token is SymbolToken { Type: Constants.TokenType.NewLine })
 		{
 			Advance();
 		}
@@ -83,11 +77,11 @@ internal class Parser
 
 	private bool TryParseLabel(out Result<LabelStatement?> result)
 	{
-		result = new(null);
+		result = new Result<LabelStatement?>(null);
 
-		if (Current() is IdentifierToken t && Next() is SymbolToken n && n.Type == Constants.TokenType.Colon)
+		if (Current() is IdentifierToken t && Next() is SymbolToken { Type: Constants.TokenType.Colon })
 		{
-			result.ResultObject = new(t.Location, t.Lexeme);
+			result.ResultObject = new LabelStatement(t.Location, t.Lexeme);
 			Advance(2);
 			return true;
 		}
@@ -97,7 +91,7 @@ internal class Parser
 
 	private bool TryParseInstruction(out Result<InstructionStatement?> result)
 	{
-		result = new(null);
+		result = new Result<InstructionStatement?>(null);
 
 		if (Current() is IdentifierToken t)
 		{
@@ -116,7 +110,7 @@ internal class Parser
 				canon = canon[..^2];
 			}
 
-			if (Enum.TryParse(canon, ignoreCase: true, out Constants.Instruction instruction))
+			if (Enum.TryParse(canon, true, out Constants.Instruction instruction))
 			{
 				InstructionStatement statement = new(t.Location, instruction, size);
 				Advance();
@@ -154,7 +148,7 @@ internal class Parser
 
 	private bool TryParseDirective(out Result<DirectiveStatement?> result)
 	{
-		result = new(null);
+		result = new Result<DirectiveStatement?>(null);
 
 		if (Current() is IdentifierToken t)
 		{
@@ -166,7 +160,7 @@ internal class Parser
 				mnemonic = mnemonic[1..];
 			}
 
-			if (Enum.TryParse(mnemonic, ignoreCase: true, out Constants.Directive directive))
+			if (Enum.TryParse(mnemonic, true, out Constants.Directive directive))
 			{
 				DirectiveStatement statement = new(t.Location, directive);
 				Advance();
@@ -197,7 +191,7 @@ internal class Parser
 				break;
 			}
 
-			if (c is SymbolToken t && t.Type == Constants.TokenType.LBracket)
+			if (c is SymbolToken { Type: Constants.TokenType.LBracket })
 			{
 				Result<Operand?> memoryOperandResult = ParseMemoryOperand();
 				result.Combine(memoryOperandResult);
@@ -226,10 +220,10 @@ internal class Parser
 
 			c = Current();
 
-			if (c is SymbolToken ct && ct.Type == Constants.TokenType.Comma)
+			if (c is SymbolToken { Type: Constants.TokenType.Comma })
 			{
 				// Allow ending a line on a comma to continue list on new line
-				if (Next() is SymbolToken n && n.Type == Constants.TokenType.NewLine)
+				if (Next() is SymbolToken { Type: Constants.TokenType.NewLine })
 				{
 					Advance(2);
 				}
@@ -315,16 +309,16 @@ internal class Parser
 
 		Token inner = Current();
 
-		if (inner is IdentifierToken idt && Enum.TryParse(idt.Lexeme, ignoreCase: true, out Constants.Register register))
+		if (inner is IdentifierToken idt && Enum.TryParse(idt.Lexeme, true, out Constants.Register register))
 		{
 			Advance();
 
-			if (Current() is SymbolToken sign && sign.Type is Constants.TokenType.Plus or Constants.TokenType.Minus)
+			if (Current() is SymbolToken { Type: Constants.TokenType.Plus or Constants.TokenType.Minus })
 			{
 				// indexed
-				List<Token> tokens = ParseExpression();
+				List<Token> expressionTokens = ParseExpression();
 
-				result.ResultObject = new IndexedOperand(start.Location, register, tokens);
+				result.ResultObject = new IndexedOperand(start.Location, register, expressionTokens);
 			}
 			else
 			{
@@ -335,8 +329,8 @@ internal class Parser
 		else if (IsExpressionStart(inner))
 		{
 			// direct
-			List<Token> tokens = ParseExpression();
-			result.ResultObject = new IndirectExpressionOperand(start.Location, tokens);
+			List<Token> expressionTokens = ParseExpression();
+			result.ResultObject = new IndirectExpressionOperand(start.Location, expressionTokens);
 		}
 		else
 		{
@@ -344,7 +338,7 @@ internal class Parser
 			Advance();
 		}
 
-		if (Current() is SymbolToken rb && rb.Type == Constants.TokenType.RBracket)
+		if (Current() is SymbolToken { Type: Constants.TokenType.RBracket })
 		{
 			Advance();
 		}
@@ -359,11 +353,11 @@ internal class Parser
 
 	private bool TryParseRegisterOperand(out Result<RegisterOperand?> result)
 	{
-		result = new(null);
+		result = new Result<RegisterOperand?>(null);
 
 		if (
 			Current() is IdentifierToken t
-			&& Enum.TryParse(t.Lexeme, ignoreCase: true, out Constants.Register register)
+			&& Enum.TryParse(t.Lexeme, true, out Constants.Register register)
 		)
 		{
 			result.ResultObject = new RegisterOperand(t.Location, register);
@@ -376,11 +370,11 @@ internal class Parser
 
 	private bool TryParseConditionOperand(out Result<ConditionOperand?> result)
 	{
-		result = new(null);
+		result = new Result<ConditionOperand?>(null);
 
 		if (
 			Current() is IdentifierToken t
-			&& Enum.TryParse(t.Lexeme, ignoreCase: true, out Constants.Condition condition)
+			&& Enum.TryParse(t.Lexeme, true, out Constants.Condition condition)
 		)
 		{
 			result.ResultObject = new ConditionOperand(t.Location, condition);
@@ -393,11 +387,11 @@ internal class Parser
 
 	private bool TryParseBlockOperand(out Result<BlockOperand?> result)
 	{
-		result = new(null);
+		result = new Result<BlockOperand?>(null);
 
 		if (
 			Current() is IdentifierToken t
-			&& Enum.TryParse(t.Lexeme, ignoreCase: true, out Constants.Block block)
+			&& Enum.TryParse(t.Lexeme, true, out Constants.Block block)
 		)
 		{
 			result.ResultObject = new BlockOperand(t.Location, block);
@@ -410,11 +404,11 @@ internal class Parser
 
 	private bool TryParseSizeOperand(out Result<SizeOperand?> result)
 	{
-		result = new(null);
+		result = new Result<SizeOperand?>(null);
 
 		if (
 			Current() is IdentifierToken t
-			&& Enum.TryParse(t.Lexeme, ignoreCase: true, out Constants.Size size)
+			&& Enum.TryParse(t.Lexeme, true, out Constants.Size size)
 		)
 		{
 			// Internal enumeration used by the instruction table
@@ -433,7 +427,7 @@ internal class Parser
 
 	private bool TryParseExpressionOperand(out Result<ExpressionOperand?> result)
 	{
-		result = new(null);
+		result = new Result<ExpressionOperand?>(null);
 
 		if (!IsExpressionStart(Current()))
 		{
@@ -441,8 +435,8 @@ internal class Parser
 		}
 
 		Token start = Current();
-		List<Token> tokens = ParseExpression();
-		result.ResultObject = new ExpressionOperand(start.Location, tokens);
+		List<Token> expressionTokens = ParseExpression();
+		result.ResultObject = new ExpressionOperand(start.Location, expressionTokens);
 
 		return true;
 	}
@@ -450,18 +444,19 @@ internal class Parser
 	private List<Token> ParseExpression()
 	{
 		// Gather all tokens in this operand, recursive descent parser will be later
-		List<Token> tokens = [];
+		List<Token> expressionTokens = [];
 		Token t = Current();
 
 		while (!IsEndOfExpression(t))
 		{
-			tokens.Add(t);
+			expressionTokens.Add(t);
 			Advance();
 			t = Current();
 		}
 
-		return tokens;
+		return expressionTokens;
 	}
+
 	private static bool IsExpressionStart(Token token)
 	{
 		if (token is NumberToken or IdentifierToken)
@@ -469,63 +464,67 @@ internal class Parser
 			return true;
 		}
 
-		return token is SymbolToken t
-			&& t.Type
-			is Constants.TokenType.Plus
+		return token is SymbolToken
+		{
+			Type: Constants.TokenType.Plus
 			or Constants.TokenType.Minus
 			or Constants.TokenType.Tilde
 			or Constants.TokenType.Exclamation
 			or Constants.TokenType.Dollar
-			or Constants.TokenType.LParen;
+			or Constants.TokenType.LParen
+		};
 	}
 
 	private static bool IsEndOfExpression(Token token)
 	{
-		return token is SymbolToken t
-			&& t.Type
-			is Constants.TokenType.Comma
+		return token is SymbolToken
+		{
+			Type: Constants.TokenType.Comma
 			or Constants.TokenType.NewLine
 			or Constants.TokenType.EndOfFile
-			or Constants.TokenType.RBracket;
+			or Constants.TokenType.RBracket
+		};
 	}
 
 	private static bool IsEndOfOperand(Token token)
 	{
-		return token is SymbolToken t
-			&& t.Type
-			is Constants.TokenType.Comma
+		return token is SymbolToken
+		{
+			Type: Constants.TokenType.Comma
 			or Constants.TokenType.NewLine
-			or Constants.TokenType.EndOfFile;
+			or Constants.TokenType.EndOfFile
+		};
 	}
 
 	private static bool IsEndOfOperandList(Token token)
 	{
-		return token is SymbolToken t
-			&& t.Type
-			is Constants.TokenType.NewLine
-			or Constants.TokenType.EndOfFile;
+		return token is SymbolToken
+		{
+			Type: Constants.TokenType.NewLine
+			or Constants.TokenType.EndOfFile
+		};
 	}
 
 	private Token Current()
 	{
-		if (_position >= _tokens.Count)
+		if (_position >= tokens.Count)
 		{
 			Location location = new(string.Empty, 0, 0);
 			return new SymbolToken(location, Constants.TokenType.EndOfFile);
 		}
 
-		return _tokens[_position];
+		return tokens[_position];
 	}
 
 	private Token Next()
 	{
-		if (_position + 1 >= _tokens.Count)
+		if (_position + 1 >= tokens.Count)
 		{
 			Location location = new(string.Empty, 0, 0);
 			return new SymbolToken(location, Constants.TokenType.EndOfFile);
 		}
 
-		return _tokens[_position + 1];
+		return tokens[_position + 1];
 	}
 
 	private void Advance(int count = 1)

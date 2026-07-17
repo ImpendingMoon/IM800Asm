@@ -3,22 +3,14 @@ using IM800Asm.Lexing;
 
 namespace IM800Asm.Evaluation;
 
-internal class ExpressionEvaluator
+internal class ExpressionEvaluator(Func<string, long?> resolveSymbol)
 {
-	private List<Token> _tokens;
-	private Func<string, long?> _resolveSymbol;
 	private long _locationCounter;
 	private int _position;
+	private List<Token> _tokens = [];
 
-	public ExpressionEvaluator(Func<string, long?> resolveSymbol)
-	{
-		_tokens = [];
-		_resolveSymbol = resolveSymbol;
-		_locationCounter = 0;
-		_position = 0;
-	}
-
-	public Result<long> Evaluate(List<Token> tokens, long locationCounter, Constants.Size size, Constants.Signedness signed)
+	public Result<long> Evaluate
+		(List<Token> tokens, long locationCounter, Constants.Size size, Constants.Signedness signed)
 	{
 		Result<long> result = new(0);
 
@@ -41,7 +33,8 @@ internal class ExpressionEvaluator
 		return result;
 	}
 
-	private static Result<long> ValidateTruncateRange(
+	private static Result<long> ValidateTruncateRange
+	(
 		Location location,
 		long value,
 		Constants.Size size,
@@ -54,7 +47,7 @@ internal class ExpressionEvaluator
 		long max;
 		long truncated;
 
-		switch ((size, signed))
+		switch (size, signed)
 		{
 			case (Constants.Size.Byte, Constants.Signedness.Either):
 			{
@@ -135,7 +128,7 @@ internal class ExpressionEvaluator
 				Constants.Signedness.Either => string.Empty,
 				Constants.Signedness.Signed => "Signed ",
 				Constants.Signedness.Unsigned => "Unsigned ",
-				_ => throw new Exception($"unknown signedness {signed}"),
+				_ => throw new Exception($"unknown signedness {signed}")
 			};
 
 			result.AddWarning(
@@ -154,13 +147,14 @@ internal class ExpressionEvaluator
 	{
 		long left = ParseOr(result);
 
-		Constants.TokenType[] acceptedTypes = [
+		Constants.TokenType[] acceptedTypes =
+		[
 			Constants.TokenType.Equal,
 			Constants.TokenType.NotEqual,
 			Constants.TokenType.Greater,
 			Constants.TokenType.GreaterEqual,
 			Constants.TokenType.Less,
-			Constants.TokenType.LessEqual,
+			Constants.TokenType.LessEqual
 		];
 
 		while (TryMatchSymbol(out Constants.TokenType type, acceptedTypes))
@@ -175,7 +169,7 @@ internal class ExpressionEvaluator
 				Constants.TokenType.GreaterEqual => left >= right ? 1 : 0,
 				Constants.TokenType.Less => left < right ? 1 : 0,
 				Constants.TokenType.LessEqual => left <= right ? 1 : 0,
-				_ => throw new Exception($"Unexpected comparison type {type}"),
+				_ => throw new Exception($"Unexpected comparison type {type}")
 			};
 		}
 
@@ -228,16 +222,15 @@ internal class ExpressionEvaluator
 	{
 		long left = ParseAddSub(result);
 
-		Constants.TokenType[] acceptedTypes = [
-				Constants.TokenType.ShiftLeft,
-				Constants.TokenType.ShiftRight,
-			];
+		Constants.TokenType[] acceptedTypes =
+		[
+			Constants.TokenType.ShiftLeft,
+			Constants.TokenType.ShiftRight
+		];
 
 		while (true)
 		{
-			Constants.TokenType type = default;
-
-			TryMatchSymbol(out type, acceptedTypes);
+			TryMatchSymbol(out Constants.TokenType type, acceptedTypes);
 
 			// try aliases
 			if (type == default)
@@ -270,7 +263,7 @@ internal class ExpressionEvaluator
 			{
 				Constants.TokenType.ShiftLeft => left << (int)right,
 				Constants.TokenType.ShiftRight => left >> (int)right,
-				_ => throw new Exception($"Unexpected shift type {type}"),
+				_ => throw new Exception($"Unexpected shift type {type}")
 			};
 		}
 
@@ -281,9 +274,10 @@ internal class ExpressionEvaluator
 	{
 		long left = ParseMultDiv(result);
 
-		Constants.TokenType[] acceptedTypes = [
+		Constants.TokenType[] acceptedTypes =
+		[
 			Constants.TokenType.Plus,
-			Constants.TokenType.Minus,
+			Constants.TokenType.Minus
 		];
 
 		while (TryMatchSymbol(out Constants.TokenType type, acceptedTypes))
@@ -294,7 +288,7 @@ internal class ExpressionEvaluator
 			{
 				Constants.TokenType.Plus => left + right,
 				Constants.TokenType.Minus => left - right,
-				_ => throw new Exception($"Unexpected add/sub type {type}"),
+				_ => throw new Exception($"Unexpected add/sub type {type}")
 			};
 		}
 
@@ -305,17 +299,16 @@ internal class ExpressionEvaluator
 	{
 		long left = ParseUnary(result);
 
-		Constants.TokenType[] acceptedTypes = [
-				Constants.TokenType.Star,
-				Constants.TokenType.Slash,
-				Constants.TokenType.Percent,
-			];
+		Constants.TokenType[] acceptedTypes =
+		[
+			Constants.TokenType.Star,
+			Constants.TokenType.Slash,
+			Constants.TokenType.Percent
+		];
 
 		while (true)
 		{
-			Constants.TokenType type = default;
-
-			TryMatchSymbol(out type, acceptedTypes);
+			TryMatchSymbol(out Constants.TokenType type, acceptedTypes);
 
 			// try alias
 			if (type == default)
@@ -353,7 +346,7 @@ internal class ExpressionEvaluator
 					Constants.TokenType.Star => left * right,
 					Constants.TokenType.Slash => left / right,
 					Constants.TokenType.Percent => left % right,
-					_ => throw new Exception($"Unexpected mul/div type {type}"),
+					_ => throw new Exception($"Unexpected mul/div type {type}")
 				};
 			}
 		}
@@ -363,11 +356,12 @@ internal class ExpressionEvaluator
 
 	private long ParseUnary(Result result)
 	{
-		Constants.TokenType[] acceptedTypes = [
+		Constants.TokenType[] acceptedTypes =
+		[
 			Constants.TokenType.Tilde,
 			Constants.TokenType.Minus,
 			Constants.TokenType.Plus,
-			Constants.TokenType.Exclamation,
+			Constants.TokenType.Exclamation
 		];
 
 		if (TryMatchSymbol(out Constants.TokenType type, acceptedTypes))
@@ -380,7 +374,7 @@ internal class ExpressionEvaluator
 				Constants.TokenType.Minus => -operand,
 				Constants.TokenType.Plus => operand,
 				Constants.TokenType.Exclamation => operand == 0 ? 1 : 0,
-				_ => throw new Exception($"Unexpected unary type {type}"),
+				_ => throw new Exception($"Unexpected unary type {type}")
 			};
 		}
 
@@ -399,7 +393,7 @@ internal class ExpressionEvaluator
 
 		if (t is IdentifierToken it)
 		{
-			long? value = _resolveSymbol(it.Lexeme);
+			long? value = resolveSymbol(it.Lexeme);
 
 			if (value is null)
 			{
@@ -423,7 +417,7 @@ internal class ExpressionEvaluator
 
 				t = Current();
 
-				if (t is SymbolToken rp && rp.Type == Constants.TokenType.RParen)
+				if (t is SymbolToken { Type: Constants.TokenType.RParen })
 				{
 					Advance();
 				}

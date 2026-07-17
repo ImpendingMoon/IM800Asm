@@ -7,10 +7,10 @@ namespace IM800Asm.Lexing;
 
 internal class Lexer
 {
-	private List<Token> _tokens = [];
-	private List<SourceLine> _sourceLines = [];
-	private int _line = 0;
+	private readonly List<SourceLine> _sourceLines;
+	private readonly List<Token> _tokens = [];
 	private SourceLine _currentLine = SourceLine.Empty;
+	private int _line;
 
 	public Lexer(List<SourceLine> sourceLines)
 	{
@@ -35,7 +35,7 @@ internal class Lexer
 			{
 				_tokens.Add(tokenResult.ResultObject);
 
-				if (tokenResult.ResultObject is SymbolToken t && t.Type == Constants.TokenType.EndOfFile)
+				if (tokenResult.ResultObject is SymbolToken { Type: Constants.TokenType.EndOfFile })
 				{
 					break;
 				}
@@ -96,9 +96,6 @@ internal class Lexer
 		{
 			Debug.Assert(identifierResult.ResultObject is not null);
 			result.Combine(identifierResult);
-
-			IdentifierToken it = identifierResult.ResultObject;
-
 			result.ResultObject = identifierResult.ResultObject;
 		}
 		else
@@ -147,7 +144,7 @@ internal class Lexer
 		bool matchedTwo = false;
 
 		// Try as a two-char token first
-		switch ((c, n))
+		switch (c, n)
 		{
 			case ('<', '<'):
 				token = MakeSymbolToken(Constants.TokenType.ShiftLeft);
@@ -274,7 +271,7 @@ internal class Lexer
 
 	private bool TryParseCharLiteral(out Result<NumberToken?> result)
 	{
-		result = new(null);
+		result = new Result<NumberToken?>(null);
 
 		char c = Current();
 
@@ -321,7 +318,7 @@ internal class Lexer
 
 	private bool TryParseStringLiteral(out Result<StringToken?> result)
 	{
-		result = new(null);
+		result = new Result<StringToken?>(null);
 
 		char c = Current();
 
@@ -378,7 +375,7 @@ internal class Lexer
 
 	private bool TryParseNumberLiteral(out Result<NumberToken?> result)
 	{
-		result = new(null);
+		result = new Result<NumberToken?>(null);
 
 		char c = Current();
 
@@ -456,7 +453,7 @@ internal class Lexer
 
 	private bool TryParseIdentifier(out Result<IdentifierToken?> result)
 	{
-		result = new(null);
+		result = new Result<IdentifierToken?>(null);
 
 		char c = Current();
 
@@ -483,8 +480,8 @@ internal class Lexer
 	}
 
 	/// <summary>
-	/// Converts a character or escape sequence to an integer value.
-	/// Advances past the character.
+	///     Converts a character or escape sequence to an integer value.
+	///     Advances past the character.
 	/// </summary>
 	/// <returns>A result object with the parsed byte value</returns>
 	private Result<long> ParseCharInternal()
@@ -670,26 +667,26 @@ internal class Lexer
 
 	private SymbolToken MakeSymbolToken(Constants.TokenType type)
 	{
-		return new(_currentLine.Location, type);
+		return new SymbolToken(_currentLine.Location, type);
 	}
 
 	private IdentifierToken MakeIdentifierToken(Location location, string lexeme)
 	{
-		return new(location, lexeme);
+		return new IdentifierToken(location, lexeme);
 	}
 
 	private NumberToken MakeNumberToken(string lexeme, long value)
 	{
-		return new(_currentLine.Location, lexeme, value);
+		return new NumberToken(_currentLine.Location, lexeme, value);
 	}
 
 	private NumberToken MakeNumberToken(Location location, string lexeme, long value)
 	{
-		return new(location, lexeme, value);
+		return new NumberToken(location, lexeme, value);
 	}
 
 	private StringToken MakeStringToken(Location location, string lexeme, List<byte> stringData)
 	{
-		return new(location, lexeme, stringData);
+		return new StringToken(location, lexeme, stringData);
 	}
 }

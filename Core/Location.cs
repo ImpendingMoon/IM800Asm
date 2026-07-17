@@ -1,17 +1,10 @@
 namespace IM800Asm.Core;
 
-internal class Location
+internal class Location(string filePath, int line, int column)
 {
-	public Location(string filePath, int line, int column)
-	{
-		FilePath = filePath;
-		Line = line;
-		Column = column;
-	}
-
-	public string FilePath;
-	public int Line;
-	public int Column;
+	public readonly string FilePath = filePath;
+	public int Column = column;
+	public int Line = line;
 
 	public override string ToString()
 	{

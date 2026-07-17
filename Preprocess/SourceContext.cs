@@ -2,14 +2,8 @@ using IM800Asm.Core;
 
 namespace IM800Asm.Preprocess;
 
-internal class SourceContext
+internal class SourceContext(string filePath, string[] source)
 {
-	public SourceContext(string filePath, string[] source)
-	{
-		Source = source;
-		Location = new(filePath, 0, 0);
-	}
-
-	public string[] Source { get; set; }
-	public Location Location { get; set; }
+	public string[] Source { get; set; } = source;
+	public Location Location { get; set; } = new(filePath, 0, 0);
 }

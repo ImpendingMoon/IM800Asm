@@ -12,5 +12,13 @@
 			" ESA AF, A, BYTE"
 		],
 		"ExpectedOutputHex": "4000"
+	},
+	{
+		"Name": "Mini Program",
+		"Source": [
+			"LD A, 8",
+			"RET"
+		],
+		"ExpectedOutputHex": "00E108008A1E"
 	}
 ]

@@ -97,10 +97,7 @@ internal static class Program
 			return 1;
 		}
 
-		if (outputFile == null)
-		{
-			outputFile = Path.ChangeExtension(inputFile, ".bin");
-		}
+		outputFile ??= Path.ChangeExtension(inputFile, ".bin");
 
 		if (!File.Exists(inputFile))
 		{
@@ -108,7 +105,7 @@ internal static class Program
 			return 1;
 		}
 
-		Stopwatch stopwatch = Stopwatch.StartNew();
+		var stopwatch = Stopwatch.StartNew();
 
 		string[] source = File.ReadAllLines(inputFile);
 
@@ -188,8 +185,10 @@ internal static class Program
 			Console.WriteLine();
 			Console.WriteLine("Warnings:");
 
-			foreach (var warning in result.Warnings)
+			foreach (Result.Error warning in result.Warnings)
+			{
 				Console.WriteLine($"  {warning}");
+			}
 		}
 
 		if (result.Errors.Count > 0)
@@ -197,8 +196,10 @@ internal static class Program
 			Console.WriteLine();
 			Console.WriteLine("Errors:");
 
-			foreach (var error in result.Errors)
+			foreach (Result.Error error in result.Errors)
+			{
 				Console.WriteLine($"  {error}");
+			}
 		}
 	}
 
@@ -217,7 +218,8 @@ internal static class Program
 
 	private static void PrintUsage()
 	{
-		Console.WriteLine("""
+		Console.WriteLine(
+			"""
             Usage:
               im800asm [options] <input>
 
@@ -227,13 +229,14 @@ internal static class Program
               -l <file>      Write listing file (stub)
               --test <file>  Run assembler tests
               -h, --help     Show this help
-            """);
+            """
+		);
 	}
 
 	private static void WriteSymbolFile(string filePath, IReadOnlyDictionary<string, Symbol> symbolTable)
 	{
 		List<string> lines = [];
-		foreach (var kvp in symbolTable.OrderBy(x => x.Value.Value))
+		foreach (KeyValuePair<string, Symbol> kvp in symbolTable.OrderBy(x => x.Value.Value))
 		{
 			Symbol symbol = kvp.Value;
 			if (symbol.Type == Constants.SymbolType.Label)
@@ -249,7 +252,8 @@ internal static class Program
 		File.WriteAllLines(filePath, lines);
 	}
 
-	private static void WriteListingFile(
+	private static void WriteListingFile
+	(
 		string filePath,
 		List<SourceLine> sourceLines,
 		List<Statement> statements,
@@ -311,7 +315,6 @@ internal static class Program
 
 		foreach (ListingEntry entry in listingEntries)
 		{
-
 			string address = entry.BaseAddress.ToString("X8");
 
 			string primaryByteLine = string.Empty;
@@ -366,23 +369,16 @@ internal static class Program
 		File.WriteAllText(filePath, sb.ToString());
 	}
 
-	private class ListingEntry
-	{
-		public ListingEntry(int baseAddress, SourceLine sourceLine, List<byte> bytes)
-		{
-			BaseAddress = baseAddress;
-			SourceLine = sourceLine;
-			Bytes = bytes;
-		}
-
-		public int BaseAddress { get; set; }
-		public SourceLine SourceLine { get; set; }
-		public List<byte> Bytes { get; set; }
-	}
-
 	private static void RunTests(string fileName)
 	{
 		List<TestCase> testCases = Tester.ParseTestCases(fileName);
 		Tester.Test(testCases);
+	}
+
+	private class ListingEntry(int baseAddress, SourceLine sourceLine, List<byte> bytes)
+	{
+		public int BaseAddress { get; } = baseAddress;
+		public SourceLine SourceLine { get; } = sourceLine;
+		public List<byte> Bytes { get; } = bytes;
 	}
 }

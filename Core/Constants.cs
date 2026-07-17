@@ -2,29 +2,101 @@
 
 internal static class Constants
 {
-	public const string HexPrefix = "0x";
-	public const string BinaryPrefix = "0b";
-	public const string OctalPrefix = "0o";
+	public enum AcceptedOperandType
+	{
+		// Accepts any of A, B, C, D, E, H, L, AF, BC, DE, HL, IX, IY, SP
+		AnyRegister,
 
-	public const char HexSuffix = 'h';
-	public const char BinarySuffix = 'b';
-	public const char OctalSuffix = 'o';
+		// Accepts any of A, B, C, D, E, H, L
+		NarrowRegister,
 
-	public const int DecimalRadix = 10;
-	public const int HexRadix = 16;
-	public const int BinaryRadix = 2;
-	public const int OctalRadix = 8;
+		// Accepts any of AF, BC, DE, HL, IX, IY, SP
+		WideRegister,
 
-	public const char CommentChar = ';';
-	public const char StringDelim = '"';
-	public const char SizeSeparator = '.';
+		// Accepts only one register
+		ExactRegister,
 
-	public const string ModuloAlias = "MOD";
-	public const string ShiftLeftAlias = "SHL";
-	public const string ShiftRightAlias = "SHR";
+		// Accepts any of [rr], [rr+#], [#] (there are no instructions that only take a subset of these)
+		Memory,
 
-	// Condition field encoding for an unconditional B instruction
-	public const int AlwaysConditionSelector = 0b1111;
+		// Accepts an expression
+		Immediate,
+
+		// Accepts a condition or the C register (fixed to Carry condition)
+		Condition,
+
+		// Accepts a block operand or the D, I, R registers (fixed to Decrement, Increment, Repeat operands)
+		Block,
+
+		// Accepts a size operand or the 1, 2, 4, or 8 number literals
+		Size
+	}
+
+	public enum Block
+	{
+		D, I, // Decrement, Increment
+		S, R // Single, Repeat
+	}
+
+	public enum Condition
+	{
+		NZ, Z, NC, C, PO, PE, P, M
+	}
+
+	public enum Directive
+	{
+		ORG, EQU, ALIGN,
+		DEFB, DEFW, DEFD, DEFQ, DEFS, DB, DW, DD, DQ, DS,
+		RESB, RESW, RESD, RESQ, RB, RW, RD, RQ
+	}
+
+	public enum Instruction
+	{
+		LD, EX, PUSH, POP, ESA, EXH, EXA, EXX, EXI, IN, OUT,
+		ADD, ADC, SUB, SBC, CP, INC, DEC, NEG, EXT, MLT, DIV, SDIV, DAA,
+		AND, OR, XOR, TST, CPL, BIT, SET, RES, RLC, RRC, RL, RR, SLA, SRA, SRL, RLD, RRD,
+		NOP, JP, JR, DJNZ, JAZ, JANZ, CALL, CR, RET, RST, SCF, CCF,
+		EI, DI, IM, RETI, RETN, HALT,
+		BLD, BCP, BTST, BIN, BOUT,
+		BKPT
+	}
+
+	public enum InstructionFormat
+	{
+		R,
+		RM,
+		UR,
+		UM,
+		B,
+		M,
+		SB,
+		BLK
+	}
+
+	public enum Register
+	{
+		A, F, B, C, D, E, H, L,
+		AF, BC, DE, HL, IX, IY, SP,
+		PC, I, R
+	}
+
+	public enum Signedness
+	{
+		Either,
+		Signed,
+		Unsigned
+	}
+
+	public enum Size
+	{
+		Unsized = 0, Byte, Word, Dword, Qword
+	}
+
+	public enum SymbolType
+	{
+		Label,
+		EQU
+	}
 
 	public enum TokenType
 	{
@@ -55,92 +127,35 @@ internal static class Constants
 		Exclamation,
 		Dollar,
 		NewLine,
-		EndOfFile,
+		EndOfFile
 	}
 
-	public enum Instruction
-	{
-		LD, EX, PUSH, POP, ESA, EXH, EXA, EXX, EXI, IN, OUT,
-		ADD, ADC, SUB, SBC, CP, INC, DEC, NEG, EXT, MLT, DIV, SDIV, DAA,
-		AND, OR, XOR, TST, CPL, BIT, SET, RES, RLC, RRC, RL, RR, SLA, SRA, SRL, RLD, RRD,
-		NOP, JP, JR, DJNZ, JAZ, JANZ, CALL, CR, RET, RST, SCF, CCF,
-		EI, DI, IM, RETI, RETN, HALT,
-		BLD, BCP, BTST, BIN, BOUT,
-		BKPT,
-	}
+	public const string HexPrefix = "0x";
+	public const string BinaryPrefix = "0b";
+	public const string OctalPrefix = "0o";
 
-	public enum Directive
-	{
-		ORG, EQU, ALIGN,
-		DEFB, DEFW, DEFD, DEFQ, DEFS, DB, DW, DD, DQ, DS,
-		RESB, RESW, RESD, RESQ, RB, RW, RD, RQ,
-	}
+	public const char HexSuffix = 'h';
+	public const char BinarySuffix = 'b';
+	public const char OctalSuffix = 'o';
 
-	public enum Register
-	{
-		A, F, B, C, D, E, H, L,
-		AF, BC, DE, HL, IX, IY, SP,
-		PC, I, R,
-	}
+	public const int DecimalRadix = 10;
+	public const int HexRadix = 16;
+	public const int BinaryRadix = 2;
+	public const int OctalRadix = 8;
 
-	public enum Condition
-	{
-		NZ, Z, NC, C, PO, PE, P, M,
-	}
+	public const char CommentChar = ';';
+	public const char StringDelim = '"';
+	public const char SizeSeparator = '.';
 
-	public enum Block
-	{
-		D, I, // Decrement, Increment
-		S, R, // Single, Repeat
-	}
+	public const string ModuloAlias = "MOD";
+	public const string ShiftLeftAlias = "SHL";
+	public const string ShiftRightAlias = "SHR";
 
-	public enum Size
-	{
-		Unsized = 0, Byte, Word, Dword, Qword,
-	}
+	// Condition field encoding for an unconditional B instruction
+	public const int AlwaysConditionSelector = 0b1111;
 
-	public enum AcceptedOperandType
-	{
-		// Accepts any of A, B, C, D, E, H, L, AF, BC, DE, HL, IX, IY, SP
-		AnyRegister,
-		// Accepts any of A, B, C, D, E, H, L
-		NarrowRegister,
-		// Accepts any of AF, BC, DE, HL, IX, IY, SP
-		WideRegister,
-		// Accepts only one register
-		ExactRegister,
-		// Accepts any of [rr], [rr+#], [#] (there are no instructions that only take a subset of these)
-		Memory,
-		// Accepts an expression
-		Immediate,
-		// Accepts a condition or the C register (fixed to Carry condition)
-		Condition,
-		// Accepts a block operand or the D, I, R registers (fixed to Decrement, Increment, Repeat operands)
-		Block,
-		// Accepts a size operand or the 1, 2, 4, or 8 number literals
-		Size,
-	}
-
-	public enum InstructionFormat
-	{
-		R,
-		RM,
-		UR,
-		UM,
-		B,
-		M,
-		SB,
-		BLK,
-	}
-
-	public enum Signedness
-	{
-		Either,
-		Signed,
-		Unsigned,
-	}
-
-	public static readonly HashSet<Register> AnyRegisterValues = [
+	public static readonly HashSet<Register> AnyRegisterValues =
+	[
 		Register.A,
 		Register.B,
 		Register.C,
@@ -154,10 +169,11 @@ internal static class Constants
 		Register.HL,
 		Register.IX,
 		Register.IY,
-		Register.SP,
+		Register.SP
 	];
 
-	public static readonly HashSet<Register> NarrowRegisterValues = [
+	public static readonly HashSet<Register> NarrowRegisterValues =
+	[
 		Register.A,
 		Register.B,
 		Register.C,
@@ -165,10 +181,11 @@ internal static class Constants
 		Register.E,
 		Register.H,
 		Register.L,
-		Register.R,
+		Register.R
 	];
 
-	public static readonly HashSet<Register> WideRegisterValues = [
+	public static readonly HashSet<Register> WideRegisterValues =
+	[
 		Register.AF,
 		Register.BC,
 		Register.DE,
@@ -176,10 +193,11 @@ internal static class Constants
 		Register.IX,
 		Register.IY,
 		Register.SP,
-		Register.I,
+		Register.I
 	];
 
-	public static readonly HashSet<Instruction> BitAndShiftInstructions = [
+	public static readonly HashSet<Instruction> BitAndShiftInstructions =
+	[
 		Instruction.BIT,
 		Instruction.SET,
 		Instruction.RES,
@@ -189,12 +207,6 @@ internal static class Constants
 		Instruction.RR,
 		Instruction.SLA,
 		Instruction.SRA,
-		Instruction.SRL,
+		Instruction.SRL
 	];
-
-	public enum SymbolType
-	{
-		Label,
-		EQU,
-	}
 }

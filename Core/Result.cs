@@ -1,7 +1,7 @@
 ﻿namespace IM800Asm.Core;
 
 /// <summary>
-/// For actions where failure is an expected result.
+///     For actions where failure is an expected result.
 /// </summary>
 public class Result
 {
@@ -32,16 +32,10 @@ public class Result
 		_warnings.AddRange(other._warnings);
 	}
 
-	public class Error
+	public class Error(string source, string message)
 	{
-		public Error(string source, string message)
-		{
-			Source = source;
-			Message = message;
-		}
-
-		public string Source { get; set; }
-		public string Message { get; set; }
+		public string Source { get; set; } = source;
+		public string Message { get; set; } = message;
 
 		public override string ToString()
 		{
@@ -51,16 +45,11 @@ public class Result
 }
 
 /// <summary>
-/// For actions where failure is an expected result.
-/// Includes a member for returning an object.
+///     For actions where failure is an expected result.
+///     Includes a member for returning an object.
 /// </summary>
 /// <typeparam name="T">Type of the result object.</typeparam>
-public class Result<T> : Result
+public class Result<T>(T result) : Result
 {
-	public Result(T result)
-	{
-		ResultObject = result;
-	}
-
-	public T ResultObject { get; set; }
+	public T ResultObject { get; set; } = result;
 }

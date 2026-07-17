@@ -1,15 +1,8 @@
 namespace IM800Asm.Core;
 
-internal class Symbol
+internal class Symbol(Constants.SymbolType type, string name, long value)
 {
-	public Symbol(Constants.SymbolType type, string name, long value)
-	{
-		Type = type;
-		Name = name;
-		Value = value;
-	}
-
-	public Constants.SymbolType Type { get; set; }
-	public string Name { get; set; }
-	public long Value { get; set; }
+	public Constants.SymbolType Type { get; set; } = type;
+	public string Name { get; set; } = name;
+	public long Value { get; set; } = value;
 }

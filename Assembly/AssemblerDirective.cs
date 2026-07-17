@@ -7,7 +7,7 @@ namespace IM800Asm.Assembly;
 internal partial class Assembler
 {
 	/// <summary>
-	/// Evaluates pass one directives, and measures pass two directives
+	///     Evaluates pass one directives, and measures pass two directives
 	/// </summary>
 	/// <param name="st"></param>
 	/// <returns>Number of bytes to increment the location counter by</returns>
@@ -27,12 +27,12 @@ internal partial class Assembler
 			Constants.Directive.RW or Constants.Directive.RESW => EmitReserveSpace(st, Constants.Size.Word),
 			Constants.Directive.RD or Constants.Directive.RESD => EmitReserveSpace(st, Constants.Size.Dword),
 			Constants.Directive.RQ or Constants.Directive.RESQ => EmitReserveSpace(st, Constants.Size.Qword),
-			_ => throw new Exception($"unknown directive {st.Directive}"),
+			_ => throw new Exception($"unknown directive {st.Directive}")
 		};
 	}
 
 	/// <summary>
-	/// Evaluates pass directives, and evaluates pass two directives
+	///     Evaluates pass directives, and evaluates pass two directives
 	/// </summary>
 	/// <param name="st"></param>
 	/// <returns>Number of bytes to increment the location counter by</returns>
@@ -40,19 +40,19 @@ internal partial class Assembler
 	{
 		return st.Directive switch
 		{
-			Constants.Directive.ORG => new(st.Length),
-			Constants.Directive.EQU => new(0),
+			Constants.Directive.ORG => new Result<long>(st.Length),
+			Constants.Directive.EQU => new Result<long>(0),
 			Constants.Directive.ALIGN => EmitDefineSpace(st),
 			Constants.Directive.DB or Constants.Directive.DEFB => EmitDefineValue(st, Constants.Size.Byte),
 			Constants.Directive.DW or Constants.Directive.DEFW => EmitDefineValue(st, Constants.Size.Word),
 			Constants.Directive.DD or Constants.Directive.DEFD => EmitDefineValue(st, Constants.Size.Dword),
 			Constants.Directive.DQ or Constants.Directive.DEFQ => EmitDefineValue(st, Constants.Size.Qword),
 			Constants.Directive.DS or Constants.Directive.DEFS => EmitDefineSpace(st),
-			Constants.Directive.RB or Constants.Directive.RESB => new(st.Length),
-			Constants.Directive.RW or Constants.Directive.RESW => new(st.Length),
-			Constants.Directive.RD or Constants.Directive.RESD => new(st.Length),
-			Constants.Directive.RQ or Constants.Directive.RESQ => new(st.Length),
-			_ => throw new Exception($"unknown directive {st.Directive}"),
+			Constants.Directive.RB or Constants.Directive.RESB => new Result<long>(st.Length),
+			Constants.Directive.RW or Constants.Directive.RESW => new Result<long>(st.Length),
+			Constants.Directive.RD or Constants.Directive.RESD => new Result<long>(st.Length),
+			Constants.Directive.RQ or Constants.Directive.RESQ => new Result<long>(st.Length),
+			_ => throw new Exception($"unknown directive {st.Directive}")
 		};
 	}
 
@@ -72,7 +72,7 @@ internal partial class Assembler
 			Constants.Size.Word => 2,
 			Constants.Size.Dword => 4,
 			Constants.Size.Qword => 8,
-			_ => throw new Exception($"unknown size {size}"),
+			_ => throw new Exception($"unknown size {size}")
 		};
 
 		result.ResultObject = st.Operands.Count * multiplier;
@@ -126,7 +126,8 @@ internal partial class Assembler
 			result.AddError("Assembler", $"{st.Location} {st.Directive} expected operand list");
 			return result;
 		}
-		else if (st.Operands.Count > 2)
+
+		if (st.Operands.Count > 2)
 		{
 			result.AddError("Assembler", $"{st.Location} invalid operands for {st.Directive}");
 			return result;
@@ -190,18 +191,16 @@ internal partial class Assembler
 				);
 				return result;
 			}
-			else
-			{
-				Result<long> fillEvalResult = _evaluator.Evaluate(
-					eo.ExpressionTokens,
-					_locationCounter,
-					Constants.Size.Byte,
-					Constants.Signedness.Either
-				);
 
-				result.Combine(fillEvalResult);
-				fillByte = fillEvalResult.ResultObject;
-			}
+			Result<long> fillEvalResult = _evaluator.Evaluate(
+				eo.ExpressionTokens,
+				_locationCounter,
+				Constants.Size.Byte,
+				Constants.Signedness.Either
+			);
+
+			result.Combine(fillEvalResult);
+			fillByte = fillEvalResult.ResultObject;
 		}
 
 		st.FileOffset = _data.Count;
@@ -283,7 +282,8 @@ internal partial class Assembler
 
 		List<Token> tokens = eo.ExpressionTokens;
 		Result<long> evaluationResult = _evaluator.Evaluate(
-			tokens, _locationCounter,
+			tokens,
+			_locationCounter,
 			Constants.Size.Qword,
 			Constants.Signedness.Signed
 		);
@@ -387,7 +387,7 @@ internal partial class Assembler
 			Constants.Size.Word => 2,
 			Constants.Size.Dword => 4,
 			Constants.Size.Qword => 8,
-			_ => throw new Exception($"unknown size {size}"),
+			_ => throw new Exception($"unknown size {size}")
 		};
 
 		result.ResultObject = evalResult.ResultObject * multiplier;
