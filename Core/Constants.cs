@@ -1,6 +1,6 @@
 ﻿namespace IM800Asm.Core;
 
-internal static class Constants
+public static class Constants
 {
 	public enum AcceptedOperandType
 	{
@@ -50,9 +50,54 @@ internal static class Constants
 		RESB, RESW, RESD, RESQ, RB, RW, RD, RQ
 	}
 
+	public enum ErrorCode
+	{
+		None = 0,
+
+		// Lexer
+		UnexpectedCharacter = 100,
+		EmptyCharacterLiteral = 101,
+		UnterminatedCharacterLiteral = 102,
+		CharacterLiteralTooLong = 103,
+		UnterminatedStringLiteral = 104,
+		InvalidNumberLiteral = 105,
+		NumberLiteralTooLarge = 106,
+		InvalidEscapeSequence = 107,
+
+		// Parser
+		UnexpectedToken = 200,
+		UnexpectedEndOfFile = 201,
+		ExpectedOperand = 202,
+		UnexpectedOperand = 203,
+		UnterminatedIndirectOperand = 204,
+
+		// Semantic
+		RedefinedSymbol = 300,
+		InvalidAddressingMode = 301,
+		InvalidOperand = 302,
+		ValueOutOfRange = 303,
+		InvalidContext = 304,
+		InvalidSize = 305,
+		OperandSizeMismatch = 306,
+
+		// Expressions
+		InvalidExpression = 400,
+		UndefinedSymbol = 401,
+		DivisionByZero = 402,
+		UnmatchedParenthesis = 403,
+		TruncatedValue = 404
+	}
+
+	public enum ErrorSeverity
+	{
+		Info = 0,
+		Warning,
+		Error
+	}
+
 	public enum Instruction
 	{
-		LD, EX, PUSH, POP, ESA, EXH, EXA, EXX, EXI, IN, OUT,
+		LD, EX, PUSH, POP, LEA, EXH, EXA, EXX, EXI, IN, OUT,
 		ADD, ADC, SUB, SBC, CP, INC, DEC, NEG, EXT, MLT, DIV, SDIV, DAA,
 		AND, OR, XOR, TST, CPL, BIT, SET, RES, RLC, RRC, RL, RR, SLA, SRA, SRL, RLD, RRD,
 		NOP, JP, JR, DJNZ, JAZ, JANZ, CALL, CR, RET, RST, SCF, CCF,

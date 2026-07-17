@@ -7,9 +7,9 @@
 		"ExpectedOutputHex": "0001"
 	},
 	{
-		"Name": "ESA AF, A, BYTE",
+		"Name": "LEA AF, A, BYTE",
 		"Source": [
-			" ESA AF, A, BYTE"
+			" LEA AF, A, BYTE"
 		],
 		"ExpectedOutputHex": "4000"
 	},

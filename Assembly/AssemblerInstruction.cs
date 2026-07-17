@@ -22,13 +22,14 @@ internal partial class Assembler
 			{
 				if (ro.Register == Constants.Register.C)
 				{
-					st.Operands[0] = new ConditionOperand(ro.Location, Constants.Condition.C);
+					st.Operands[0] = new ConditionOperand(ro.SourceLocation, Constants.Condition.C);
 				}
 				else
 				{
 					result.AddError(
-						"Assembler",
-						$"{st.Location} invalid operand for instruction {st.Instruction}"
+						st.SourceLocation,
+						Constants.ErrorCode.InvalidOperand,
+						$"invalid operand for instruction {st.Instruction}"
 					);
 				}
 			}
@@ -41,21 +42,22 @@ internal partial class Assembler
 				{
 					if (ro.Register == Constants.Register.I)
 					{
-						st.Operands[i] = new BlockOperand(ro.Location, Constants.Block.I);
+						st.Operands[i] = new BlockOperand(ro.SourceLocation, Constants.Block.I);
 					}
 					else if (ro.Register == Constants.Register.D)
 					{
-						st.Operands[i] = new BlockOperand(ro.Location, Constants.Block.D);
+						st.Operands[i] = new BlockOperand(ro.SourceLocation, Constants.Block.D);
 					}
 					else if (ro.Register == Constants.Register.R)
 					{
-						st.Operands[i] = new BlockOperand(ro.Location, Constants.Block.R);
+						st.Operands[i] = new BlockOperand(ro.SourceLocation, Constants.Block.R);
 					}
 					else
 					{
 						result.AddError(
-							"Assembler",
-							$"{st.Location} invalid operand for instruction {st.Instruction}"
+							st.SourceLocation,
+							Constants.ErrorCode.InvalidOperand,
+							$"invalid operand for instruction {st.Instruction}"
 						);
 					}
 				}
@@ -69,8 +71,8 @@ internal partial class Assembler
 
 	private static Result<long> MeasureFormatR(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		// ESA has a unique encoding and a fixed word-sized source, regardless of size
-		if (st.Instruction == Constants.Instruction.ESA)
+		// LEA has a unique encoding and a fixed word-sized source, regardless of size
+		if (st.Instruction == Constants.Instruction.LEA)
 		{
 			return MeasureLEA(st);
 		}
@@ -102,8 +104,8 @@ internal partial class Assembler
 
 	private static Result<long> MeasureFormatRM(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		// ESA has a unique encoding and a fixed word-sized source, regardless of size
-		if (st.Instruction == Constants.Instruction.ESA)
+		// LEA has a unique encoding and a fixed word-sized source, regardless of size
+		if (st.Instruction == Constants.Instruction.LEA)
 		{
 			return MeasureLEA(st);
 		}
@@ -126,8 +128,9 @@ internal partial class Assembler
 		if (st.Operands[0] is IndirectExpressionOperand && st.Operands[1] is ExpressionOperand)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} cannot use a direct destination and immediate source together"
+				st.SourceLocation,
+				Constants.ErrorCode.InvalidAddressingMode,
+				"cannot use a direct destination and immediate source together"
 			);
 		}
 
@@ -154,7 +157,7 @@ internal partial class Assembler
 		return result;
 	}
 
-	// ESA's size field is repurposed as a scale factor, not an instruction size. The destination
+	// LEA's size field is repurposed as a scale factor, not an instruction size. The destination
 	// is always a dword and the source is always a word.
 	private static Result<long> MeasureLEA(InstructionStatement st)
 	{
@@ -166,7 +169,7 @@ internal partial class Assembler
 
 		if (st.ManualSize is not null)
 		{
-			result.AddError("Assembler", $"{st.Location} ESA does not support a size suffix");
+			result.AddError(st.SourceLocation, Constants.ErrorCode.InvalidSize, "LEA does not support a size suffix");
 		}
 
 		Operand destOperand = st.Operands[0];
@@ -320,8 +323,8 @@ internal partial class Assembler
 
 	private Result<long> EmitFormatR(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		// ESA has a unique encoding
-		if (st.Instruction == Constants.Instruction.ESA)
+		// LEA has a unique encoding
+		if (st.Instruction == Constants.Instruction.LEA)
 		{
 			return EmitLEA(st, entry);
 		}
@@ -360,8 +363,8 @@ internal partial class Assembler
 
 	private Result<long> EmitFormatRM(InstructionStatement st, InstructionTable.Entry entry)
 	{
-		// ESA has a unique encoding
-		if (st.Instruction == Constants.Instruction.ESA)
+		// LEA has a unique encoding
+		if (st.Instruction == Constants.Instruction.LEA)
 		{
 			return EmitLEA(st, entry);
 		}
@@ -667,13 +670,21 @@ internal partial class Assembler
 						function = 0b00000101;
 						break;
 					default:
-						result.AddError("Assembler", $"{st.Location} IM mode must be 1 or 2");
+						result.AddError(
+							st.SourceLocation,
+							Constants.ErrorCode.InvalidOperand,
+							"IM mode must be 1 or 2"
+						);
 						break;
 				}
 			}
 			else
 			{
-				result.AddError("Assembler", $"{st.Location} IM mode must be 1 or 2");
+				result.AddError(
+					st.SourceLocation,
+					Constants.ErrorCode.InvalidOperand,
+					"IM mode must be 1 or 2"
+				);
 			}
 		}
 		else if (
@@ -907,7 +918,7 @@ internal partial class Assembler
 			| (function << 12);
 	}
 
-	// ************* ESA *****************
+	// ************* LEA *****************
 
 	private Result<long> EmitLEA(InstructionStatement st, InstructionTable.Entry entry)
 	{
@@ -954,7 +965,7 @@ internal partial class Assembler
 					break;
 				}
 				default:
-					throw new Exception($"Unexpected operand type {srcOperand.GetType()} in ESA format R");
+					throw new Exception($"Unexpected operand type {srcOperand.GetType()} in LEA format R");
 			}
 
 			instructionWord = EncodeFormatR(entry.Opcode, scaleSelector, destRegisterSelector, srcRegisterSelector);
@@ -997,7 +1008,7 @@ internal partial class Assembler
 					break;
 				}
 				default:
-					throw new Exception($"Unexpected operand type {otherOperand.GetType()} in ESA format RM");
+					throw new Exception($"Unexpected operand type {otherOperand.GetType()} in LEA format RM");
 			}
 
 			instructionWord = EncodeFormatRM(
@@ -1076,7 +1087,11 @@ internal partial class Assembler
 
 		if (!entry.AllowedSizes.Contains(result.ResultObject))
 		{
-			result.AddError("Assembler", $"{st.Location} invalid size for instruction {st.Instruction}");
+			result.AddError(
+				st.SourceLocation,
+				Constants.ErrorCode.InvalidSize,
+				$"invalid size for instruction {st.Instruction}"
+			);
 		}
 
 		// If there is a meaningful size and the instruction cannot have mixed instruction sizes, check that every
@@ -1093,8 +1108,9 @@ internal partial class Assembler
 					)
 					{
 						result.AddError(
-							"Assembler",
-							$"{ro.Location} cannot use wide register in {result.ResultObject}-sized instruction"
+							ro.SourceLocation,
+							Constants.ErrorCode.OperandSizeMismatch,
+							$"cannot use wide register in {result.ResultObject}-sized instruction"
 						);
 						// Only want one error per instruction here
 						break;
@@ -1106,8 +1122,9 @@ internal partial class Assembler
 					)
 					{
 						result.AddError(
-							"Assembler",
-							$"{ro.Location} cannot use narrow register in {result.ResultObject}-sized instruction"
+							ro.SourceLocation,
+							Constants.ErrorCode.OperandSizeMismatch,
+							$"cannot use narrow register in {result.ResultObject}-sized instruction"
 						);
 						// Only want one error per instruction here
 						break;
@@ -1384,8 +1401,9 @@ internal partial class Assembler
 		{
 			Token firstToken = operand.ExpressionTokens[0];
 			result.AddWarning(
-				"Assembler",
-				$"{firstToken.Location} relative value {relative} truncated to Signed {size} {truncated}"
+				firstToken.SourceLocation,
+				Constants.ErrorCode.TruncatedValue,
+				$"relative value {relative} truncated to Signed {size} {truncated}"
 			);
 		}
 
@@ -1430,8 +1448,9 @@ internal partial class Assembler
 		if (size is not (Constants.Size.Byte or Constants.Size.Word))
 		{
 			result.AddError(
-				"Assembler",
-				$"{operand.Location} block instructions only support byte and word sizes"
+				operand.SourceLocation,
+				Constants.ErrorCode.InvalidSize,
+				"block instructions only support byte and word sizes"
 			);
 			return result;
 		}
@@ -1457,7 +1476,7 @@ internal partial class Assembler
 			ExpressionOperand { ExpressionTokens: [NumberToken { Value: 8 }] } => GetSizeSelectorBits(
 				Constants.Size.Qword
 			),
-			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for ESA scale selector")
+			_ => throw new Exception($"Unexpected operand type {operand.GetType()} for LEA scale selector")
 		};
 	}
 }

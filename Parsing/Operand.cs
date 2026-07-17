@@ -6,14 +6,14 @@ namespace IM800Asm.Parsing;
 
 internal class Operand
 {
-	public Location Location { get; set; } = new(string.Empty, 0, 0);
+	public SourceLocation SourceLocation { get; set; } = new(string.Empty, 0, 0);
 }
 
 internal class RegisterOperand : Operand
 {
-	public RegisterOperand(Location location, Constants.Register register)
+	public RegisterOperand(SourceLocation sourceLocation, Constants.Register register)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Register = register;
 	}
 
@@ -27,9 +27,9 @@ internal class RegisterOperand : Operand
 
 internal class ExpressionOperand : Operand
 {
-	public ExpressionOperand(Location location, List<Token> expressionTokens)
+	public ExpressionOperand(SourceLocation sourceLocation, List<Token> expressionTokens)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		ExpressionTokens = expressionTokens;
 	}
 
@@ -50,9 +50,9 @@ internal class ExpressionOperand : Operand
 
 internal class IndirectRegisterOperand : Operand
 {
-	public IndirectRegisterOperand(Location location, Constants.Register register)
+	public IndirectRegisterOperand(SourceLocation sourceLocation, Constants.Register register)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Register = register;
 	}
 
@@ -66,9 +66,9 @@ internal class IndirectRegisterOperand : Operand
 
 internal class IndirectExpressionOperand : Operand
 {
-	public IndirectExpressionOperand(Location location, List<Token> expressionTokens)
+	public IndirectExpressionOperand(SourceLocation sourceLocation, List<Token> expressionTokens)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		ExpressionTokens = expressionTokens;
 	}
 
@@ -93,9 +93,9 @@ internal class IndirectExpressionOperand : Operand
 
 internal class IndexedOperand : Operand
 {
-	public IndexedOperand(Location location, Constants.Register register, List<Token> expressionTokens)
+	public IndexedOperand(SourceLocation sourceLocation, Constants.Register register, List<Token> expressionTokens)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Register = register;
 		ExpressionTokens = expressionTokens;
 	}
@@ -123,9 +123,9 @@ internal class IndexedOperand : Operand
 
 internal class ConditionOperand : Operand
 {
-	public ConditionOperand(Location location, Constants.Condition condition)
+	public ConditionOperand(SourceLocation sourceLocation, Constants.Condition condition)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Condition = condition;
 	}
 
@@ -139,9 +139,9 @@ internal class ConditionOperand : Operand
 
 internal class BlockOperand : Operand
 {
-	public BlockOperand(Location location, Constants.Block block)
+	public BlockOperand(SourceLocation sourceLocation, Constants.Block block)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Block = block;
 	}
 
@@ -155,9 +155,9 @@ internal class BlockOperand : Operand
 
 internal class SizeOperand : Operand
 {
-	public SizeOperand(Location location, Constants.Size size)
+	public SizeOperand(SourceLocation sourceLocation, Constants.Size size)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Size = size;
 	}
 

@@ -93,7 +93,11 @@ internal partial class Assembler
 				}
 				else
 				{
-					result.AddError("Assembler", $"{ls.Location} cannot redefine symbol \"{ls.Text}\"");
+					result.AddError(
+						ls.SourceLocation,
+						Constants.ErrorCode.RedefinedSymbol,
+						$"cannot redefine symbol \"{ls.Text}\""
+					);
 				}
 			}
 			else if (st is DirectiveStatement ds)
@@ -131,8 +135,9 @@ internal partial class Assembler
 				else
 				{
 					result.AddError(
-						"Assembler",
-						$"{inst.Location} invalid operands for instruction {inst.Instruction}"
+						inst.SourceLocation,
+						Constants.ErrorCode.InvalidAddressingMode,
+						$"invalid operands for instruction {inst.Instruction}"
 					);
 				}
 
@@ -192,8 +197,9 @@ internal partial class Assembler
 				else
 				{
 					result.AddError(
-						"Assembler",
-						$"{inst.Location} invalid operands for instruction {inst.Instruction}"
+						inst.SourceLocation,
+						Constants.ErrorCode.InvalidAddressingMode,
+						$"invalid operands for instruction {inst.Instruction}"
 					);
 				}
 

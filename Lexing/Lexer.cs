@@ -100,7 +100,11 @@ internal class Lexer
 		}
 		else
 		{
-			result.AddError("Lexer", $"{_currentLine.Location} unexpected character {c}");
+			result.AddError(
+				_currentLine.SourceLocation,
+				Constants.ErrorCode.UnexpectedCharacter,
+				$"unexpected character {c}"
+			);
 			Advance();
 		}
 
@@ -280,14 +284,18 @@ internal class Lexer
 			return false;
 		}
 
-		int startColumn = _currentLine.Location.Column;
+		int startColumn = _currentLine.SourceLocation.Column;
 
 		Advance();
 		c = Current();
 
 		if (c == '\'')
 		{
-			result.AddError("Lexer", $"{_currentLine.Location} expected character in character literal");
+			result.AddError(
+				_currentLine.SourceLocation,
+				Constants.ErrorCode.EmptyCharacterLiteral,
+				"expected character in character literal"
+			);
 			result.ResultObject = MakeNumberToken("''", 0);
 			Advance();
 		}
@@ -300,7 +308,11 @@ internal class Lexer
 
 			if (c != '\'')
 			{
-				result.AddError("Lexer", $"{_currentLine.Location} expected end of character literal");
+				result.AddError(
+					_currentLine.SourceLocation,
+					Constants.ErrorCode.UnterminatedCharacterLiteral,
+					"expected end of character literal"
+				);
 			}
 			else
 			{
@@ -308,7 +320,7 @@ internal class Lexer
 			}
 
 			result.ResultObject = MakeNumberToken(
-				_currentLine.Source[startColumn.._currentLine.Location.Column],
+				_currentLine.Source[startColumn.._currentLine.SourceLocation.Column],
 				parseResult.ResultObject
 			);
 		}
@@ -329,7 +341,7 @@ internal class Lexer
 
 		List<byte> stringValue = [];
 
-		Location startLocation = _currentLine.Location;
+		SourceLocation startSourceLocation = _currentLine.SourceLocation;
 
 		Advance();
 		c = Current();
@@ -338,7 +350,11 @@ internal class Lexer
 		{
 			if (IsNewLine(c) || c == '\0')
 			{
-				result.AddError("Lexer", $"{_currentLine.Location} expected end of string literal");
+				result.AddError(
+					_currentLine.SourceLocation,
+					Constants.ErrorCode.UnterminatedStringLiteral,
+					"expected end of string literal"
+				);
 				break;
 			}
 
@@ -365,8 +381,8 @@ internal class Lexer
 		}
 
 		result.ResultObject = MakeStringToken(
-			startLocation,
-			_currentLine.Source[startLocation.Column.._currentLine.Location.Column],
+			startSourceLocation,
+			_currentLine.Source[startSourceLocation.Column.._currentLine.SourceLocation.Column],
 			stringValue
 		);
 
@@ -384,7 +400,7 @@ internal class Lexer
 			return false;
 		}
 
-		Location startLocation = _currentLine.Location;
+		SourceLocation startSourceLocation = _currentLine.SourceLocation;
 
 		StringBuilder sb = new();
 
@@ -438,15 +454,23 @@ internal class Lexer
 		}
 		catch (OverflowException)
 		{
-			result.AddError("Lexer", $"{startLocation}: number literal value too large \"{lexeme}\"");
+			result.AddError(
+				startSourceLocation,
+				Constants.ErrorCode.NumberLiteralTooLarge,
+				$"number literal value too large \"{lexeme}\""
+			);
 		}
 		catch (Exception)
 		{
-			result.AddError("Lexer", $"{startLocation} invalid number literal \"{lexeme}\"");
+			result.AddError(
+				startSourceLocation,
+				Constants.ErrorCode.InvalidNumberLiteral,
+				$"invalid number literal \"{lexeme}\""
+			);
 		}
 
 
-		result.ResultObject = MakeNumberToken(startLocation, lexeme, value);
+		result.ResultObject = MakeNumberToken(startSourceLocation, lexeme, value);
 
 		return true;
 	}
@@ -462,8 +486,8 @@ internal class Lexer
 			return false;
 		}
 
-		int startColumn = _currentLine.Location.Column;
-		Location startLocation = _currentLine.Location;
+		int startColumn = _currentLine.SourceLocation.Column;
+		SourceLocation startSourceLocation = _currentLine.SourceLocation;
 
 		while (IsIdentifierChar(c))
 		{
@@ -472,8 +496,8 @@ internal class Lexer
 		}
 
 		result.ResultObject = MakeIdentifierToken(
-			startLocation,
-			_currentLine.Source[startColumn.._currentLine.Location.Column]
+			startSourceLocation,
+			_currentLine.Source[startColumn.._currentLine.SourceLocation.Column]
 		);
 
 		return true;
@@ -490,7 +514,7 @@ internal class Lexer
 
 		char c = Current();
 
-		Location startLocation = _currentLine.Location;
+		SourceLocation startSourceLocation = _currentLine.SourceLocation;
 
 		// Escape sequence
 		if (c == '\\')
@@ -552,8 +576,9 @@ internal class Lexer
 					if (!char.IsAsciiHexDigit(upper))
 					{
 						result.AddError(
-							"Lexer",
-							$"{startLocation} expected two hex characters for escaped hex value"
+							startSourceLocation,
+							Constants.ErrorCode.InvalidEscapeSequence,
+							"expected two hex characters for escaped hex value"
 						);
 						break;
 					}
@@ -563,8 +588,9 @@ internal class Lexer
 					if (!char.IsAsciiHexDigit(lower))
 					{
 						result.AddError(
-							"Lexer",
-							$"{startLocation} expected two hex characters for escaped hex value"
+							startSourceLocation,
+							Constants.ErrorCode.InvalidEscapeSequence,
+							"expected two hex characters for escaped hex value"
 						);
 						break;
 					}
@@ -577,7 +603,11 @@ internal class Lexer
 					}
 					else
 					{
-						result.AddError("Lexer", $"{startLocation} invalid escaped hex value \"\\x{full}\"");
+						result.AddError(
+							startSourceLocation,
+							Constants.ErrorCode.InvalidEscapeSequence,
+							$"invalid escaped hex value \"\\x{full}\""
+						);
 					}
 
 					Advance();
@@ -586,7 +616,11 @@ internal class Lexer
 				}
 				default:
 				{
-					result.AddError("Lexer", $"{startLocation} invalid escape sequence \"\\{c}\"");
+					result.AddError(
+						startSourceLocation,
+						Constants.ErrorCode.InvalidEscapeSequence,
+						$"invalid escape sequence \"\\{c}\""
+					);
 					Advance();
 					break;
 				}
@@ -637,12 +671,12 @@ internal class Lexer
 			return '\0';
 		}
 
-		if (_currentLine.Location.Column >= _currentLine.Source.Length)
+		if (_currentLine.SourceLocation.Column >= _currentLine.Source.Length)
 		{
 			return '\n';
 		}
 
-		return _currentLine.Source[_currentLine.Location.Column];
+		return _currentLine.Source[_currentLine.SourceLocation.Column];
 	}
 
 	private char Next()
@@ -652,41 +686,41 @@ internal class Lexer
 			return '\0';
 		}
 
-		if (_currentLine.Location.Column + 1 >= _currentLine.Source.Length)
+		if (_currentLine.SourceLocation.Column + 1 >= _currentLine.Source.Length)
 		{
 			return '\n';
 		}
 
-		return _currentLine.Source[_currentLine.Location.Column + 1];
+		return _currentLine.Source[_currentLine.SourceLocation.Column + 1];
 	}
 
 	private void Advance(int count = 1)
 	{
-		_currentLine.Location.Column += count;
+		_currentLine.SourceLocation.Column += count;
 	}
 
 	private SymbolToken MakeSymbolToken(Constants.TokenType type)
 	{
-		return new SymbolToken(_currentLine.Location, type);
+		return new SymbolToken(_currentLine.SourceLocation, type);
 	}
 
-	private IdentifierToken MakeIdentifierToken(Location location, string lexeme)
+	private IdentifierToken MakeIdentifierToken(SourceLocation sourceLocation, string lexeme)
 	{
-		return new IdentifierToken(location, lexeme);
+		return new IdentifierToken(sourceLocation, lexeme);
 	}
 
 	private NumberToken MakeNumberToken(string lexeme, long value)
 	{
-		return new NumberToken(_currentLine.Location, lexeme, value);
+		return new NumberToken(_currentLine.SourceLocation, lexeme, value);
 	}
 
-	private NumberToken MakeNumberToken(Location location, string lexeme, long value)
+	private NumberToken MakeNumberToken(SourceLocation sourceLocation, string lexeme, long value)
 	{
-		return new NumberToken(location, lexeme, value);
+		return new NumberToken(sourceLocation, lexeme, value);
 	}
 
-	private StringToken MakeStringToken(Location location, string lexeme, List<byte> stringData)
+	private StringToken MakeStringToken(SourceLocation sourceLocation, string lexeme, List<byte> stringData)
 	{
-		return new StringToken(location, lexeme, stringData);
+		return new StringToken(sourceLocation, lexeme, stringData);
 	}
 }

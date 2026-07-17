@@ -5,7 +5,7 @@ namespace IM800Asm.Parsing;
 
 internal class Statement
 {
-	public Location Location { get; set; } = new(string.Empty, 0, 0);
+	public SourceLocation SourceLocation { get; set; } = new(string.Empty, 0, 0);
 
 	// Used to detect differences between pass 1 and pass 2
 	public long MeasuredLocationCounter { get; set; }
@@ -18,9 +18,9 @@ internal class Statement
 
 internal class LabelStatement : Statement
 {
-	public LabelStatement(Location location, string text)
+	public LabelStatement(SourceLocation sourceLocation, string text)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Text = text;
 	}
 
@@ -28,15 +28,15 @@ internal class LabelStatement : Statement
 
 	public override string ToString()
 	{
-		return $"{Location} Label: {Text}";
+		return $"{SourceLocation} Label: {Text}";
 	}
 }
 
 internal class InstructionStatement : Statement
 {
-	public InstructionStatement(Location location, Constants.Instruction instruction, Constants.Size? size)
+	public InstructionStatement(SourceLocation sourceLocation, Constants.Instruction instruction, Constants.Size? size)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Instruction = instruction;
 		ManualSize = size;
 		FinalSize = default;
@@ -55,7 +55,7 @@ internal class InstructionStatement : Statement
 	{
 		StringBuilder sb = new();
 
-		sb.Append($"{Location} {Instruction}");
+		sb.Append($"{SourceLocation} {Instruction}");
 
 		if (ManualSize is not null)
 		{
@@ -81,9 +81,9 @@ internal class InstructionStatement : Statement
 
 internal class DirectiveStatement : Statement
 {
-	public DirectiveStatement(Location location, Constants.Directive directive)
+	public DirectiveStatement(SourceLocation sourceLocation, Constants.Directive directive)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Directive = directive;
 	}
 
@@ -94,7 +94,7 @@ internal class DirectiveStatement : Statement
 	{
 		StringBuilder sb = new();
 
-		sb.Append($"{Location} {Directive}");
+		sb.Append($"{SourceLocation} {Directive}");
 
 		sb.Append(' ');
 
@@ -114,13 +114,13 @@ internal class DirectiveStatement : Statement
 
 internal class EndOfFileStatement : Statement
 {
-	public EndOfFileStatement(Location location)
+	public EndOfFileStatement(SourceLocation sourceLocation)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 	}
 
 	public override string ToString()
 	{
-		return $"{Location} EOF";
+		return $"{SourceLocation} EOF";
 	}
 }

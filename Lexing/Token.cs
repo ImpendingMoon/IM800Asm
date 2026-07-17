@@ -4,7 +4,7 @@ namespace IM800Asm.Lexing;
 
 internal class Token
 {
-	public Location Location { get; set; } = new(string.Empty, 0, 0);
+	public SourceLocation SourceLocation { get; set; } = new(string.Empty, 0, 0);
 
 	public virtual string ToShortString()
 	{
@@ -14,9 +14,9 @@ internal class Token
 
 internal class SymbolToken : Token
 {
-	public SymbolToken(Location location, Constants.TokenType type)
+	public SymbolToken(SourceLocation sourceLocation, Constants.TokenType type)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Type = type;
 	}
 
@@ -59,15 +59,15 @@ internal class SymbolToken : Token
 
 	public override string ToString()
 	{
-		return $"{Location} Symbol: {Type}";
+		return $"{SourceLocation} Symbol: {Type}";
 	}
 }
 
 internal class IdentifierToken : Token
 {
-	public IdentifierToken(Location location, string lexeme)
+	public IdentifierToken(SourceLocation sourceLocation, string lexeme)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Lexeme = lexeme;
 	}
 
@@ -80,15 +80,15 @@ internal class IdentifierToken : Token
 
 	public override string ToString()
 	{
-		return $"{Location} Identifier: {Lexeme}";
+		return $"{SourceLocation} Identifier: {Lexeme}";
 	}
 }
 
 internal class NumberToken : Token
 {
-	public NumberToken(Location location, string lexeme, long value)
+	public NumberToken(SourceLocation sourceLocation, string lexeme, long value)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Lexeme = lexeme;
 		Value = value;
 	}
@@ -103,15 +103,15 @@ internal class NumberToken : Token
 
 	public override string ToString()
 	{
-		return $"{Location} Number: {Lexeme} (0x{Value:X})";
+		return $"{SourceLocation} Number: {Lexeme} (0x{Value:X})";
 	}
 }
 
 internal class StringToken : Token
 {
-	public StringToken(Location location, string lexeme, List<byte> stringData)
+	public StringToken(SourceLocation sourceLocation, string lexeme, List<byte> stringData)
 	{
-		Location = location;
+		SourceLocation = sourceLocation;
 		Lexeme = lexeme;
 		StringData = stringData;
 	}
@@ -126,6 +126,6 @@ internal class StringToken : Token
 
 	public override string ToString()
 	{
-		return $"{Location} String: {Lexeme}";
+		return $"{SourceLocation} String: {Lexeme}";
 	}
 }

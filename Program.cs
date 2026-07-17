@@ -283,7 +283,7 @@ internal static class Program
 				Statement statement = statements[currentStatement];
 
 				// We've reached statements for a later source line.
-				if (statement.Location.Line > sourceLine.Location.Line)
+				if (statement.SourceLocation.Line > sourceLine.SourceLocation.Line)
 				{
 					break;
 				}

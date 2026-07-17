@@ -5,9 +5,9 @@ namespace IM800Asm.Preprocess;
 internal class Preprocessor
 {
 	private readonly HashSet<string> _activeIncludes = [];
-	private Stack<SourceContext> _contextStack = [];
 	private readonly SourceContext _currentContext;
 	private readonly List<SourceLine> _processedLines = [];
+	private Stack<SourceContext> _contextStack = [];
 
 	public Preprocessor(string filePath, string[] source)
 	{
@@ -22,8 +22,8 @@ internal class Preprocessor
 		for (int i = 0; i < _currentContext.Source.Length; i++)
 		{
 			string line = _currentContext.Source[i];
-			Location location = new(_currentContext.Location.FilePath, i, 0);
-			_processedLines.Add(new SourceLine(location, line));
+			SourceLocation sourceLocation = new(_currentContext.SourceLocation.FilePath, i, 0);
+			_processedLines.Add(new SourceLine(sourceLocation, line));
 		}
 
 		return result;

@@ -1,8 +1,8 @@
 namespace IM800Asm.Core;
 
-internal class SourceLine(Location location, string source)
+internal class SourceLine(SourceLocation sourceLocation, string source)
 {
-	public Location Location { get; set; } = location;
+	public SourceLocation SourceLocation { get; set; } = sourceLocation;
 	public string Source { get; set; } = source;
-	public static SourceLine Empty => new(new Location(string.Empty, 0, 0), string.Empty);
+	public static SourceLine Empty => new(new SourceLocation(string.Empty, 0, 0), string.Empty);
 }

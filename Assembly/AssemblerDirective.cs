@@ -62,7 +62,11 @@ internal partial class Assembler
 
 		if (st.Operands.Count == 0)
 		{
-			result.AddError("Assembler", $"{st.Location} {st.Directive} expected operand list");
+			result.AddError(
+				st.SourceLocation,
+				Constants.ErrorCode.ExpectedOperand,
+				$"{st.Directive} expected operand list"
+			);
 			return result;
 		}
 
@@ -86,7 +90,11 @@ internal partial class Assembler
 
 		if (st.Operands.Count == 0)
 		{
-			result.AddError("Assembler", $"{st.Location} {st.Directive} expected operand list");
+			result.AddError(
+				st.SourceLocation,
+				Constants.ErrorCode.ExpectedOperand,
+				$"{st.Directive} expected operand list"
+			);
 			return result;
 		}
 
@@ -97,8 +105,9 @@ internal partial class Assembler
 			if (operand is not ExpressionOperand eo)
 			{
 				result.AddError(
-					"Assembler",
-					$"{operand.Location} invalid operand for directive {st.Directive}"
+					operand.SourceLocation,
+					Constants.ErrorCode.InvalidOperand,
+					$"invalid operand for directive {st.Directive}"
 				);
 				return result;
 			}
@@ -123,13 +132,21 @@ internal partial class Assembler
 
 		if (st.Operands.Count == 0)
 		{
-			result.AddError("Assembler", $"{st.Location} {st.Directive} expected operand list");
+			result.AddError(
+				st.SourceLocation,
+				Constants.ErrorCode.ExpectedOperand,
+				$"{st.Directive} expected operand list"
+			);
 			return result;
 		}
 
 		if (st.Operands.Count > 2)
 		{
-			result.AddError("Assembler", $"{st.Location} invalid operands for {st.Directive}");
+			result.AddError(
+				st.SourceLocation,
+				Constants.ErrorCode.InvalidOperand,
+				$"invalid operands for {st.Directive}"
+			);
 			return result;
 		}
 
@@ -137,8 +154,9 @@ internal partial class Assembler
 		if (st.Operands[0] is not ExpressionOperand eo)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Operands[0].Location} invalid operand for directive {st.Directive}"
+				st.Operands[0].SourceLocation,
+				Constants.ErrorCode.InvalidOperand,
+				$"invalid operand for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -155,8 +173,9 @@ internal partial class Assembler
 		if (spaceEvalResult.ResultObject < 0)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} expression cannot be negative"
+				st.SourceLocation,
+				Constants.ErrorCode.ValueOutOfRange,
+				$"{st.Directive} expression cannot be negative"
 			);
 			return result;
 		}
@@ -164,8 +183,9 @@ internal partial class Assembler
 		if (spaceEvalResult.ResultObject > uint.MaxValue)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+				st.SourceLocation,
+				Constants.ErrorCode.ValueOutOfRange,
+				$"{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
 			);
 			return result;
 		}
@@ -186,8 +206,9 @@ internal partial class Assembler
 			if (st.Operands[1] is not ExpressionOperand eo)
 			{
 				result.AddError(
-					"Assembler",
-					$"{st.Operands[1].Location} invalid operand for directive {st.Directive}"
+					st.Operands[1].SourceLocation,
+					Constants.ErrorCode.InvalidOperand,
+					$"invalid operand for directive {st.Directive}"
 				);
 				return result;
 			}
@@ -220,8 +241,9 @@ internal partial class Assembler
 		if (st.Operands.Count != 1 || st.Operands[0] is not ExpressionOperand eo)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} invalid operands for directive {st.Directive}"
+				st.SourceLocation,
+				Constants.ErrorCode.InvalidOperand,
+				$"invalid operands for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -238,8 +260,9 @@ internal partial class Assembler
 		if (evalResult.ResultObject < 0)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} expression cannot be negative"
+				st.SourceLocation,
+				Constants.ErrorCode.ValueOutOfRange,
+				$"{st.Directive} expression cannot be negative"
 			);
 			return result;
 		}
@@ -247,8 +270,9 @@ internal partial class Assembler
 		if (evalResult.ResultObject > uint.MaxValue)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+				st.SourceLocation,
+				Constants.ErrorCode.ValueOutOfRange,
+				$"{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
 			);
 			return result;
 		}
@@ -265,8 +289,9 @@ internal partial class Assembler
 		if (st.Operands.Count != 1 || st.Operands[0] is not ExpressionOperand eo)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} invalid operands for directive {st.Directive}"
+				st.SourceLocation,
+				Constants.ErrorCode.InvalidOperand,
+				$"invalid operands for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -274,8 +299,9 @@ internal partial class Assembler
 		if (_lastDefinedSymbol == string.Empty)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} must follow a label declaration"
+				st.SourceLocation,
+				Constants.ErrorCode.InvalidContext,
+				$"{st.Directive} must follow a label declaration"
 			);
 			return result;
 		}
@@ -300,8 +326,9 @@ internal partial class Assembler
 		if (st.Operands.Count != 1 || st.Operands[0] is not ExpressionOperand eo)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} invalid operands for directive {st.Directive}"
+				st.SourceLocation,
+				Constants.ErrorCode.InvalidOperand,
+				$"invalid operands for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -318,8 +345,9 @@ internal partial class Assembler
 		if (evalResult.ResultObject <= 0)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} expression must be positive"
+				st.SourceLocation,
+				Constants.ErrorCode.ValueOutOfRange,
+				$"{st.Directive} expression must be positive"
 			);
 			return result;
 		}
@@ -327,8 +355,9 @@ internal partial class Assembler
 		if (evalResult.ResultObject > uint.MaxValue)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+				st.SourceLocation,
+				Constants.ErrorCode.ValueOutOfRange,
+				$"{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
 			);
 			return result;
 		}
@@ -349,8 +378,9 @@ internal partial class Assembler
 		if (st.Operands.Count != 1 || st.Operands[0] is not ExpressionOperand eo)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} invalid operands for directive {st.Directive}"
+				st.SourceLocation,
+				Constants.ErrorCode.InvalidOperand,
+				$"invalid operands for directive {st.Directive}"
 			);
 			return result;
 		}
@@ -366,8 +396,9 @@ internal partial class Assembler
 		if (evalResult.ResultObject < 0)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} expression cannot be negative"
+				st.SourceLocation,
+				Constants.ErrorCode.ValueOutOfRange,
+				$"{st.Directive} expression cannot be negative"
 			);
 			return result;
 		}
@@ -375,8 +406,9 @@ internal partial class Assembler
 		if (evalResult.ResultObject > uint.MaxValue)
 		{
 			result.AddError(
-				"Assembler",
-				$"{st.Location} {st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
+				st.SourceLocation,
+				Constants.ErrorCode.ValueOutOfRange,
+				$"{st.Directive} expression cannot be greater than 0x{uint.MaxValue:X}"
 			);
 			return result;
 		}

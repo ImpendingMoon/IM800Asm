@@ -1,6 +1,6 @@
 namespace IM800Asm.Core;
 
-internal class Location(string filePath, int line, int column)
+public class SourceLocation(string filePath, int line, int column)
 {
 	public readonly string FilePath = filePath;
 	public int Column = column;

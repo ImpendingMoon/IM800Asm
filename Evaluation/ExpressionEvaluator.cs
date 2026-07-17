@@ -27,7 +27,7 @@ internal class ExpressionEvaluator(Func<string, long?> resolveSymbol)
 		result.ResultObject = value;
 
 		Token firstToken = tokens[0];
-		Result<long> rangeResult = ValidateTruncateRange(firstToken.Location, value, size, signed);
+		Result<long> rangeResult = ValidateTruncateRange(firstToken.SourceLocation, value, size, signed);
 		result.Combine(rangeResult);
 
 		return result;
@@ -35,7 +35,7 @@ internal class ExpressionEvaluator(Func<string, long?> resolveSymbol)
 
 	private static Result<long> ValidateTruncateRange
 	(
-		Location location,
+		SourceLocation sourceLocation,
 		long value,
 		Constants.Size size,
 		Constants.Signedness signed
@@ -132,8 +132,9 @@ internal class ExpressionEvaluator(Func<string, long?> resolveSymbol)
 			};
 
 			result.AddWarning(
-				"Expression",
-				$"{location} value {value} truncated to {signedDisplay}{size} {truncated}"
+				sourceLocation,
+				Constants.ErrorCode.TruncatedValue,
+				$"value {value} truncated to {signedDisplay}{size} {truncated}"
 			);
 		}
 
@@ -336,7 +337,7 @@ internal class ExpressionEvaluator(Func<string, long?> resolveSymbol)
 			{
 				// Get previous token (last token of add/sub)
 				Token p = _tokens[_position - 1];
-				result.AddError("Expression", $"{p.Location} division by zero");
+				result.AddError(p.SourceLocation, Constants.ErrorCode.DivisionByZero, "division by zero");
 				left = 0;
 			}
 			else
@@ -397,7 +398,11 @@ internal class ExpressionEvaluator(Func<string, long?> resolveSymbol)
 
 			if (value is null)
 			{
-				result.AddError("Expression", $"{it.Location} undefined symbol \"{it.Lexeme}\"");
+				result.AddError(
+					it.SourceLocation,
+					Constants.ErrorCode.UndefinedSymbol,
+					$"undefined symbol \"{it.Lexeme}\""
+				);
 				return 0;
 			}
 
@@ -423,14 +428,18 @@ internal class ExpressionEvaluator(Func<string, long?> resolveSymbol)
 				}
 				else
 				{
-					result.AddError("Expression", $"{t.Location} expected ')'");
+					result.AddError(t.SourceLocation, Constants.ErrorCode.UnmatchedParenthesis, "expected ')'");
 				}
 
 				return value;
 			}
 		}
 
-		result.AddError("Expression", $"{t.Location} expected value, got {t.ToShortString()}");
+		result.AddError(
+			t.SourceLocation,
+			Constants.ErrorCode.UnexpectedToken,
+			$"expected value, got {t.ToShortString()}"
+		);
 		return 0;
 	}
 
@@ -454,8 +463,8 @@ internal class ExpressionEvaluator(Func<string, long?> resolveSymbol)
 	{
 		if (_position >= _tokens.Count)
 		{
-			Location location = new(string.Empty, 0, 0);
-			return new SymbolToken(location, Constants.TokenType.EndOfFile);
+			SourceLocation sourceLocation = new(string.Empty, 0, 0);
+			return new SymbolToken(sourceLocation, Constants.TokenType.EndOfFile);
 		}
 
 		return _tokens[_position];

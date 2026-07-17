@@ -42,7 +42,7 @@ internal class Parser(List<Token> tokens)
 
 		if (token is SymbolToken { Type: Constants.TokenType.EndOfFile } t)
 		{
-			result.ResultObject = new EndOfFileStatement(t.Location);
+			result.ResultObject = new EndOfFileStatement(t.SourceLocation);
 		}
 		else if (token is SymbolToken { Type: Constants.TokenType.NewLine })
 		{
@@ -68,7 +68,11 @@ internal class Parser(List<Token> tokens)
 		}
 		else
 		{
-			result.AddError("Parser", $"{token.Location} unexpected token {token.ToShortString()}");
+			result.AddError(
+				token.SourceLocation,
+				Constants.ErrorCode.UnexpectedToken,
+				$"unexpected token {token.ToShortString()}"
+			);
 			Advance();
 		}
 
@@ -81,7 +85,7 @@ internal class Parser(List<Token> tokens)
 
 		if (Current() is IdentifierToken t && Next() is SymbolToken { Type: Constants.TokenType.Colon })
 		{
-			result.ResultObject = new LabelStatement(t.Location, t.Lexeme);
+			result.ResultObject = new LabelStatement(t.SourceLocation, t.Lexeme);
 			Advance(2);
 			return true;
 		}
@@ -112,7 +116,7 @@ internal class Parser(List<Token> tokens)
 
 			if (Enum.TryParse(canon, true, out Constants.Instruction instruction))
 			{
-				InstructionStatement statement = new(t.Location, instruction, size);
+				InstructionStatement statement = new(t.SourceLocation, instruction, size);
 				Advance();
 
 				Result<List<Operand>> operandsResult = ParseOperands();
@@ -162,7 +166,7 @@ internal class Parser(List<Token> tokens)
 
 			if (Enum.TryParse(mnemonic, true, out Constants.Directive directive))
 			{
-				DirectiveStatement statement = new(t.Location, directive);
+				DirectiveStatement statement = new(t.SourceLocation, directive);
 				Advance();
 
 				Result<List<Operand>> operandsResult = ParseOperands();
@@ -234,7 +238,7 @@ internal class Parser(List<Token> tokens)
 			}
 			else if (!IsEndOfOperand(c))
 			{
-				result.AddError("Parser", $"{c.Location} expected end of operand");
+				result.AddError(c.SourceLocation, Constants.ErrorCode.UnexpectedOperand, "expected end of operand");
 				Advance();
 			}
 		}
@@ -248,8 +252,8 @@ internal class Parser(List<Token> tokens)
 
 		foreach (byte b in token.StringData)
 		{
-			NumberToken byteToken = new(token.Location, b.ToString(), b);
-			operands.Add(new ExpressionOperand(token.Location, [byteToken]));
+			NumberToken byteToken = new(token.SourceLocation, b.ToString(), b);
+			operands.Add(new ExpressionOperand(token.SourceLocation, [byteToken]));
 		}
 
 		return operands;
@@ -293,7 +297,7 @@ internal class Parser(List<Token> tokens)
 		}
 		else
 		{
-			result.AddError("Parser", $"{c.Location} unexpected token {c}");
+			result.AddError(c.SourceLocation, Constants.ErrorCode.UnexpectedToken, $"unexpected token {c}");
 			Advance();
 		}
 
@@ -318,23 +322,27 @@ internal class Parser(List<Token> tokens)
 				// indexed
 				List<Token> expressionTokens = ParseExpression();
 
-				result.ResultObject = new IndexedOperand(start.Location, register, expressionTokens);
+				result.ResultObject = new IndexedOperand(start.SourceLocation, register, expressionTokens);
 			}
 			else
 			{
 				// indirect
-				result.ResultObject = new IndirectRegisterOperand(start.Location, register);
+				result.ResultObject = new IndirectRegisterOperand(start.SourceLocation, register);
 			}
 		}
 		else if (IsExpressionStart(inner))
 		{
 			// direct
 			List<Token> expressionTokens = ParseExpression();
-			result.ResultObject = new IndirectExpressionOperand(start.Location, expressionTokens);
+			result.ResultObject = new IndirectExpressionOperand(start.SourceLocation, expressionTokens);
 		}
 		else
 		{
-			result.AddError("Parser", $"{inner.Location} expected register or expression");
+			result.AddError(
+				inner.SourceLocation,
+				Constants.ErrorCode.ExpectedOperand,
+				"expected register or expression"
+			);
 			Advance();
 		}
 
@@ -345,7 +353,7 @@ internal class Parser(List<Token> tokens)
 		else
 		{
 			Token c = Current();
-			result.AddError("Parser", $"{c.Location} expected ']'");
+			result.AddError(c.SourceLocation, Constants.ErrorCode.UnterminatedIndirectOperand, "expected ']'");
 		}
 
 		return result;
@@ -360,7 +368,7 @@ internal class Parser(List<Token> tokens)
 			&& Enum.TryParse(t.Lexeme, true, out Constants.Register register)
 		)
 		{
-			result.ResultObject = new RegisterOperand(t.Location, register);
+			result.ResultObject = new RegisterOperand(t.SourceLocation, register);
 			Advance();
 			return true;
 		}
@@ -377,7 +385,7 @@ internal class Parser(List<Token> tokens)
 			&& Enum.TryParse(t.Lexeme, true, out Constants.Condition condition)
 		)
 		{
-			result.ResultObject = new ConditionOperand(t.Location, condition);
+			result.ResultObject = new ConditionOperand(t.SourceLocation, condition);
 			Advance();
 			return true;
 		}
@@ -394,7 +402,7 @@ internal class Parser(List<Token> tokens)
 			&& Enum.TryParse(t.Lexeme, true, out Constants.Block block)
 		)
 		{
-			result.ResultObject = new BlockOperand(t.Location, block);
+			result.ResultObject = new BlockOperand(t.SourceLocation, block);
 			Advance();
 			return true;
 		}
@@ -417,7 +425,7 @@ internal class Parser(List<Token> tokens)
 				return false;
 			}
 
-			result.ResultObject = new SizeOperand(t.Location, size);
+			result.ResultObject = new SizeOperand(t.SourceLocation, size);
 			Advance();
 			return true;
 		}
@@ -436,7 +444,7 @@ internal class Parser(List<Token> tokens)
 
 		Token start = Current();
 		List<Token> expressionTokens = ParseExpression();
-		result.ResultObject = new ExpressionOperand(start.Location, expressionTokens);
+		result.ResultObject = new ExpressionOperand(start.SourceLocation, expressionTokens);
 
 		return true;
 	}
@@ -509,8 +517,8 @@ internal class Parser(List<Token> tokens)
 	{
 		if (_position >= tokens.Count)
 		{
-			Location location = new(string.Empty, 0, 0);
-			return new SymbolToken(location, Constants.TokenType.EndOfFile);
+			SourceLocation sourceLocation = new(string.Empty, 0, 0);
+			return new SymbolToken(sourceLocation, Constants.TokenType.EndOfFile);
 		}
 
 		return tokens[_position];
@@ -520,8 +528,8 @@ internal class Parser(List<Token> tokens)
 	{
 		if (_position + 1 >= tokens.Count)
 		{
-			Location location = new(string.Empty, 0, 0);
-			return new SymbolToken(location, Constants.TokenType.EndOfFile);
+			SourceLocation sourceLocation = new(string.Empty, 0, 0);
+			return new SymbolToken(sourceLocation, Constants.TokenType.EndOfFile);
 		}
 
 		return tokens[_position + 1];

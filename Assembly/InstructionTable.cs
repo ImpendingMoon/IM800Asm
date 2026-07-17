@@ -139,7 +139,7 @@ internal static class InstructionTable
 		[Constants.Instruction.XOR] = MakeStandardRRMEntries(0b01010),
 		[Constants.Instruction.CP] = MakeStandardRRMEntries(0b01011),
 		[Constants.Instruction.TST] = MakeStandardRRMEntries(0b01100),
-		[Constants.Instruction.ESA] =
+		[Constants.Instruction.LEA] =
 		[
 			new Entry(
 				[
