@@ -1,10 +1,17 @@
 namespace IM800Asm.Core;
 
-public class SourceLocation(string filePath, int line, int column)
+public struct SourceLocation
 {
-	public readonly string FilePath = filePath;
-	public int Column = column;
-	public int Line = line;
+	public SourceLocation(string filePath, int line, int column)
+	{
+		FilePath = filePath;
+		Line = line;
+		Column = column;
+	}
+
+	public readonly string FilePath;
+	public int Column;
+	public int Line;
 
 	public override string ToString()
 	{

@@ -4,7 +4,6 @@ using IM800Asm.Assembly;
 using IM800Asm.Core;
 using IM800Asm.Lexing;
 using IM800Asm.Parsing;
-using IM800Asm.Preprocess;
 
 namespace IM800Asm.Testing;
 
@@ -58,17 +57,7 @@ internal class Tester
 		{
 			TestResult testResult = new(testCase);
 
-			Preprocessor preprocessor = new(testCase.Name, testCase.Source);
-			Result<List<SourceLine>> preprocessResult = preprocessor.Preprocess();
-			testResult.Result.Combine(preprocessResult);
-
-			if (!testResult.Result.IsSuccess)
-			{
-				PrintResult(testResult);
-				continue;
-			}
-
-			var lexer = new Lexer(preprocessResult.ResultObject);
+			var lexer = new Lexer(testCase.Name, testCase.Source);
 			Result<List<Token>> lexerResult = lexer.Tokenize();
 
 			if (!testResult.Result.IsSuccess)
@@ -92,12 +81,6 @@ internal class Tester
 			testResult.Result.Combine(assemblerResult);
 
 			testResult.ActualOutput = assemblerResult.ResultObject;
-
-			if (!testResult.Result.IsSuccess)
-			{
-				PrintResult(testResult);
-				continue;
-			}
 
 			PrintResult(testResult);
 		}

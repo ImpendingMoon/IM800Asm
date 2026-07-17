@@ -4,7 +4,6 @@ using IM800Asm.Assembly;
 using IM800Asm.Core;
 using IM800Asm.Lexing;
 using IM800Asm.Parsing;
-using IM800Asm.Preprocess;
 using IM800Asm.Testing;
 
 namespace IM800Asm;
@@ -111,23 +110,13 @@ internal static class Program
 
 		Result result = new();
 
-		Preprocessor preprocessor = new(inputFile, source);
-		Result<List<SourceLine>> preprocessResult = preprocessor.Preprocess();
-		result.Combine(preprocessResult);
-
-		if (!result.IsSuccess)
-		{
-			PrintErrors(result);
-			return 1;
-		}
-
-		Lexer lexer = new(preprocessResult.ResultObject);
+		Lexer lexer = new(inputFile, source);
 		Result<List<Token>> tokenizeResult = lexer.Tokenize();
 		result.Combine(tokenizeResult);
 
 		if (!result.IsSuccess)
 		{
-			PrintErrors(result);
+			PrintErrors(result, source);
 			return 1;
 		}
 
@@ -137,7 +126,7 @@ internal static class Program
 
 		if (!result.IsSuccess)
 		{
-			PrintErrors(result);
+			PrintErrors(result, source);
 			return 1;
 		}
 
@@ -149,7 +138,7 @@ internal static class Program
 
 		if (!result.IsSuccess)
 		{
-			PrintErrors(result);
+			PrintErrors(result, source);
 			return 1;
 		}
 
@@ -164,7 +153,7 @@ internal static class Program
 		{
 			WriteListingFile(
 				listingFile,
-				preprocessResult.ResultObject,
+				source,
 				parseResult.ResultObject,
 				assembleResult.ResultObject
 			);
@@ -174,11 +163,11 @@ internal static class Program
 			$"Assembled {assembleResult.ResultObject.Count} bytes in {stopwatch.Elapsed.TotalSeconds:N3} seconds."
 		);
 
-		PrintErrors(result);
+		PrintErrors(result, source);
 		return 0;
 	}
 
-	private static void PrintErrors(Result result)
+	private static void PrintErrors(Result result, string[] source)
 	{
 		if (result.Warnings.Count > 0)
 		{
@@ -187,7 +176,11 @@ internal static class Program
 
 			foreach (Result.Error warning in result.Warnings)
 			{
-				Console.WriteLine($"  {warning}");
+				string sourceLine = source[warning.SourceLocation.Line];
+
+				Console.WriteLine($"{warning}");
+				Console.WriteLine($">>>{sourceLine}");
+				Console.WriteLine(GetColumnMarker(sourceLine, warning.SourceLocation.Column));
 			}
 		}
 
@@ -198,9 +191,27 @@ internal static class Program
 
 			foreach (Result.Error error in result.Errors)
 			{
-				Console.WriteLine($"  {error}");
+				string sourceLine = source[error.SourceLocation.Line];
+
+				Console.WriteLine($"{error}");
+				Console.WriteLine($">>>{sourceLine}");
+				Console.WriteLine(GetColumnMarker(sourceLine, error.SourceLocation.Column));
 			}
 		}
+	}
+
+	private static string GetColumnMarker(string line, int column)
+	{
+		StringBuilder marker = new(3, ' ');
+
+		for (int i = 0; i < column; i++)
+		{
+			char c = line[i];
+			marker.Append(c == '\t' ? '\t' : ' ');
+		}
+
+		marker.Append('^');
+		return marker.ToString();
 	}
 
 	private static string ExpandPath(string path)
@@ -255,7 +266,7 @@ internal static class Program
 	private static void WriteListingFile
 	(
 		string filePath,
-		List<SourceLine> sourceLines,
+		string[] sourceLines,
 		List<Statement> statements,
 		List<byte> output
 	)
@@ -272,8 +283,9 @@ internal static class Program
 
 		int currentBaseAddress = 0;
 
-		foreach (SourceLine sourceLine in sourceLines)
+		for (int i = 0; i < sourceLines.Length; i++)
 		{
+			string sourceLine = sourceLines[i];
 			List<byte> bytes = [];
 
 			bool hasAddress = false;
@@ -283,7 +295,7 @@ internal static class Program
 				Statement statement = statements[currentStatement];
 
 				// We've reached statements for a later source line.
-				if (statement.SourceLocation.Line > sourceLine.SourceLocation.Line)
+				if (statement.SourceLocation.Line > i)
 				{
 					break;
 				}
@@ -359,7 +371,7 @@ internal static class Program
 			sb.Append(": ");
 			sb.Append(primaryByteLine);
 			sb.Append(" ");
-			sb.AppendLine(entry.SourceLine.Source);
+			sb.AppendLine(entry.Source);
 			foreach (string additionalLine in additionalByteLines)
 			{
 				sb.AppendLine(additionalLine);
@@ -375,10 +387,10 @@ internal static class Program
 		Tester.Test(testCases);
 	}
 
-	private class ListingEntry(int baseAddress, SourceLine sourceLine, List<byte> bytes)
+	private class ListingEntry(int baseAddress, string source, List<byte> bytes)
 	{
 		public int BaseAddress { get; } = baseAddress;
-		public SourceLine SourceLine { get; } = sourceLine;
+		public string Source { get; } = source;
 		public List<byte> Bytes { get; } = bytes;
 	}
 }
