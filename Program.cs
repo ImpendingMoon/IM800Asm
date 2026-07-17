@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using IM800Asm.Assembly;
 using IM800Asm.Core;
@@ -27,6 +29,11 @@ internal static class Program
 		{
 			switch (args[i])
 			{
+				case "--version":
+					case "-v":
+						PrintVersion();
+						return 0;
+
 				case "--help":
 				case "-h":
 					PrintUsage();
@@ -240,8 +247,20 @@ internal static class Program
               -l <file>      Write listing file (stub)
               --test <file>  Run assembler tests
               -h, --help     Show this help
+              -v, --version  Show version information
             """
 		);
+	}
+
+	private static void PrintVersion()
+	{
+		System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+		string programVersion = assembly.GetName().Version?.ToString() ?? "unknown";
+		string environmentVersion = Environment.Version.ToString();
+
+		Console.WriteLine($"IM800Asm {programVersion} (.NET {environmentVersion}, {RuntimeInformation.OSDescription})");
+		Console.WriteLine("Copyright (C) 2026 ImpendingMoon");
 	}
 
 	private static void WriteSymbolFile(string filePath, IReadOnlyDictionary<string, Symbol> symbolTable)
