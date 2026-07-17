@@ -7,8 +7,8 @@ namespace IM800Asm.Lexing;
 
 internal class Lexer(string fileName, string[] sourceLines)
 {
-	private SourceLocation _sourceLocation = new(fileName, 0, 0);
 	private readonly List<Token> _tokens = [];
+	private SourceLocation _sourceLocation = new(fileName, 0, 0);
 
 	public Result<List<Token>> Tokenize()
 	{
@@ -43,12 +43,12 @@ internal class Lexer(string fileName, string[] sourceLines)
 
 		if (c == '\0')
 		{
-			SymbolToken token = MakeSymbolToken(Constants.TokenType.EndOfFile);
+			var token = new SymbolToken(_sourceLocation, Constants.TokenType.EndOfFile);
 			result.ResultObject = token;
 		}
 		else if (IsNewLine(c))
 		{
-			SymbolToken token = MakeSymbolToken(Constants.TokenType.NewLine);
+			var token = new SymbolToken(_sourceLocation, Constants.TokenType.NewLine);
 			ConsumeNewLine();
 			result.ResultObject = token;
 		}
@@ -139,27 +139,27 @@ internal class Lexer(string fileName, string[] sourceLines)
 		switch (c, n)
 		{
 			case ('<', '<'):
-				token = MakeSymbolToken(Constants.TokenType.ShiftLeft);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.ShiftLeft);
 				matchedTwo = true;
 				break;
 			case ('>', '>'):
-				token = MakeSymbolToken(Constants.TokenType.ShiftRight);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.ShiftRight);
 				matchedTwo = true;
 				break;
 			case ('=', '='):
-				token = MakeSymbolToken(Constants.TokenType.Equal);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Equal);
 				matchedTwo = true;
 				break;
 			case ('!', '='):
-				token = MakeSymbolToken(Constants.TokenType.NotEqual);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.NotEqual);
 				matchedTwo = true;
 				break;
 			case ('>', '='):
-				token = MakeSymbolToken(Constants.TokenType.GreaterEqual);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.GreaterEqual);
 				matchedTwo = true;
 				break;
 			case ('<', '='):
-				token = MakeSymbolToken(Constants.TokenType.LessEqual);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.LessEqual);
 				matchedTwo = true;
 				break;
 		}
@@ -175,79 +175,79 @@ internal class Lexer(string fileName, string[] sourceLines)
 		switch (c)
 		{
 			case ',':
-				token = MakeSymbolToken(Constants.TokenType.Comma);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Comma);
 				matchedOne = true;
 				break;
 			case ':':
-				token = MakeSymbolToken(Constants.TokenType.Colon);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Colon);
 				matchedOne = true;
 				break;
 			case '(':
-				token = MakeSymbolToken(Constants.TokenType.LParen);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.LParen);
 				matchedOne = true;
 				break;
 			case ')':
-				token = MakeSymbolToken(Constants.TokenType.RParen);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.RParen);
 				matchedOne = true;
 				break;
 			case '[':
-				token = MakeSymbolToken(Constants.TokenType.LBracket);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.LBracket);
 				matchedOne = true;
 				break;
 			case ']':
-				token = MakeSymbolToken(Constants.TokenType.RBracket);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.RBracket);
 				matchedOne = true;
 				break;
 			case '+':
-				token = MakeSymbolToken(Constants.TokenType.Plus);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Plus);
 				matchedOne = true;
 				break;
 			case '-':
-				token = MakeSymbolToken(Constants.TokenType.Minus);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Minus);
 				matchedOne = true;
 				break;
 			case '*':
-				token = MakeSymbolToken(Constants.TokenType.Star);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Star);
 				matchedOne = true;
 				break;
 			case '/':
-				token = MakeSymbolToken(Constants.TokenType.Slash);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Slash);
 				matchedOne = true;
 				break;
 			case '%':
-				token = MakeSymbolToken(Constants.TokenType.Percent);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Percent);
 				matchedOne = true;
 				break;
 			case '&':
-				token = MakeSymbolToken(Constants.TokenType.Ampersand);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Ampersand);
 				matchedOne = true;
 				break;
 			case '|':
-				token = MakeSymbolToken(Constants.TokenType.Pipe);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Pipe);
 				matchedOne = true;
 				break;
 			case '^':
-				token = MakeSymbolToken(Constants.TokenType.Caret);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Caret);
 				matchedOne = true;
 				break;
 			case '~':
-				token = MakeSymbolToken(Constants.TokenType.Tilde);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Tilde);
 				matchedOne = true;
 				break;
 			case '>':
-				token = MakeSymbolToken(Constants.TokenType.Greater);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Greater);
 				matchedOne = true;
 				break;
 			case '<':
-				token = MakeSymbolToken(Constants.TokenType.Less);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Less);
 				matchedOne = true;
 				break;
 			case '!':
-				token = MakeSymbolToken(Constants.TokenType.Exclamation);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Exclamation);
 				matchedOne = true;
 				break;
 			case '$':
-				token = MakeSymbolToken(Constants.TokenType.Dollar);
+				token = new SymbolToken(_sourceLocation, Constants.TokenType.Dollar);
 				matchedOne = true;
 				break;
 		}
@@ -284,7 +284,7 @@ internal class Lexer(string fileName, string[] sourceLines)
 				Constants.ErrorCode.EmptyCharacterLiteral,
 				"expected character in character literal"
 			);
-			result.ResultObject = MakeNumberToken("''", 0);
+			result.ResultObject = new NumberToken(_sourceLocation, "''", 0);
 			Advance();
 		}
 		else
@@ -307,7 +307,8 @@ internal class Lexer(string fileName, string[] sourceLines)
 				Advance();
 			}
 
-			result.ResultObject = MakeNumberToken(
+			result.ResultObject = new NumberToken(
+				_sourceLocation,
 				sourceLines[_sourceLocation.Line][startColumn.._sourceLocation.Column],
 				parseResult.ResultObject
 			);
@@ -368,7 +369,7 @@ internal class Lexer(string fileName, string[] sourceLines)
 			Advance();
 		}
 
-		result.ResultObject = MakeStringToken(
+		result.ResultObject = new StringToken(
 			startSourceLocation,
 			sourceLines[_sourceLocation.Line][startSourceLocation.Column.._sourceLocation.Column],
 			stringValue
@@ -458,7 +459,7 @@ internal class Lexer(string fileName, string[] sourceLines)
 		}
 
 
-		result.ResultObject = MakeNumberToken(startSourceLocation, lexeme, value);
+		result.ResultObject = new NumberToken(startSourceLocation, lexeme, value);
 
 		return true;
 	}
@@ -483,7 +484,7 @@ internal class Lexer(string fileName, string[] sourceLines)
 			c = Current();
 		}
 
-		result.ResultObject = MakeIdentifierToken(
+		result.ResultObject = new IdentifierToken(
 			startSourceLocation,
 			sourceLines[_sourceLocation.Line][startColumn.._sourceLocation.Column]
 		);
@@ -677,30 +678,5 @@ internal class Lexer(string fileName, string[] sourceLines)
 	private void Advance(int count = 1)
 	{
 		_sourceLocation.Column += count;
-	}
-
-	private SymbolToken MakeSymbolToken(Constants.TokenType type)
-	{
-		return new SymbolToken(_sourceLocation, type);
-	}
-
-	private IdentifierToken MakeIdentifierToken(SourceLocation sourceLocation, string lexeme)
-	{
-		return new IdentifierToken(sourceLocation, lexeme);
-	}
-
-	private NumberToken MakeNumberToken(string lexeme, long value)
-	{
-		return new NumberToken(_sourceLocation, lexeme, value);
-	}
-
-	private NumberToken MakeNumberToken(SourceLocation sourceLocation, string lexeme, long value)
-	{
-		return new NumberToken(sourceLocation, lexeme, value);
-	}
-
-	private StringToken MakeStringToken(SourceLocation sourceLocation, string lexeme, List<byte> stringData)
-	{
-		return new StringToken(sourceLocation, lexeme, stringData);
 	}
 }
