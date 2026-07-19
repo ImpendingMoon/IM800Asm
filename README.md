@@ -83,7 +83,7 @@ The format is line-oriented and fixed-width, showing address, emitted bytes, and
 
 e.g.
 ```text
-00000000: 00 E1 08                 LD A, 8
+00000000: 00 E1 08 00              LD A, 8
 00000003: 8A 1E                    RET
 ```
 
