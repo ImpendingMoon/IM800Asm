@@ -40,7 +40,7 @@ public static class Constants
 
 	public enum Condition
 	{
-		NZ, Z, NC, C, PO, PE, P, M
+		NZ, Z, NC, C, PO, PE, P, M, GT, L,
 	}
 
 	public enum Directive

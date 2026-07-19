@@ -48,7 +48,7 @@ internal class OperandSlot
 			Constants.AcceptedOperandType.Condition =>
 				operand is ConditionOperand or RegisterOperand
 				{
-					Register: Constants.Register.C
+					Register: Constants.Register.C or Constants.Register.L
 				},
 
 			Constants.AcceptedOperandType.Block =>

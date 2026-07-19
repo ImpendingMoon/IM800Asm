@@ -24,6 +24,10 @@ internal partial class Assembler
 				{
 					st.Operands[0] = new ConditionOperand(ro.SourceLocation, Constants.Condition.C);
 				}
+				else if (ro.Register == Constants.Register.L)
+				{
+					st.Operands[0] = new ConditionOperand(ro.SourceLocation, Constants.Condition.L);
+				}
 				else
 				{
 					result.AddError(
