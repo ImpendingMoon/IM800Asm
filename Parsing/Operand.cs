@@ -1,6 +1,6 @@
-using System.Text;
 using IM800Asm.Core;
 using IM800Asm.Lexing;
+using System.Text;
 
 namespace IM800Asm.Parsing;
 

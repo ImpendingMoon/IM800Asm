@@ -1,5 +1,5 @@
-using System.Text;
 using IM800Asm.Core;
+using System.Text;
 
 namespace IM800Asm.Parsing;
 

@@ -20,5 +20,12 @@
 			"RET"
 		],
 		"ExpectedOutputHex": "00E108008A1E"
+	},
+	{
+		"Name": "RET LT",
+		"Source": [
+			"RET LT"
+		],
+		"ExpectedOutputHex": "8A12"
 	}
 ]

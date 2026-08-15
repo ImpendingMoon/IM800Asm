@@ -1,7 +1,7 @@
-using System.Diagnostics;
 using IM800Asm.Core;
 using IM800Asm.Lexing;
 using IM800Asm.Parsing;
+using System.Diagnostics;
 
 namespace IM800Asm.Assembly;
 
@@ -23,10 +23,6 @@ internal partial class Assembler
 				if (ro.Register == Constants.Register.C)
 				{
 					st.Operands[0] = new ConditionOperand(ro.SourceLocation, Constants.Condition.C);
-				}
-				else if (ro.Register == Constants.Register.L)
-				{
-					st.Operands[0] = new ConditionOperand(ro.SourceLocation, Constants.Condition.L);
 				}
 				else
 				{

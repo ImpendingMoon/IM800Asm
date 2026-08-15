@@ -1,4 +1,4 @@
-﻿namespace IM800Asm.Core;
+namespace IM800Asm.Core;
 
 public static class Constants
 {
@@ -40,7 +40,7 @@ public static class Constants
 
 	public enum Condition
 	{
-		NZ, Z, NC, C, PO, PE, P, M, GT, L,
+		NZ, Z, NC, C, PO, PE, P, M, GE, LT,
 	}
 
 	public enum Directive

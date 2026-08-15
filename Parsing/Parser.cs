@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using IM800Asm.Core;
 using IM800Asm.Lexing;
+using System.Diagnostics;
 
 namespace IM800Asm.Parsing;
 

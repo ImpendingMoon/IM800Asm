@@ -1,7 +1,7 @@
-using System.Diagnostics;
 using IM800Asm.Core;
 using IM800Asm.Evaluation;
 using IM800Asm.Parsing;
+using System.Diagnostics;
 
 namespace IM800Asm.Assembly;
 

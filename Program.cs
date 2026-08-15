@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
 using IM800Asm.Assembly;
 using IM800Asm.Core;
 using IM800Asm.Lexing;
 using IM800Asm.Parsing;
 using IM800Asm.Testing;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace IM800Asm;
 
@@ -29,9 +29,9 @@ internal static class Program
 			switch (args[i])
 			{
 				case "--version":
-					case "-v":
-						PrintVersion();
-						return 0;
+				case "-v":
+					PrintVersion();
+					return 0;
 
 				case "--help":
 				case "-h":
@@ -114,9 +114,18 @@ internal static class Program
 
 		string[] source = File.ReadAllLines(inputFile);
 
+		List<SourceLine> sourceLines = [];
+
+		for (int i = 0; i < source.Length; i++)
+		{
+			string text = source[i];
+			SourceLine sourceLine = new(inputFile, i, text);
+			sourceLines.Add(sourceLine);
+		}
+
 		Result result = new();
 
-		Lexer lexer = new(inputFile, source);
+		Lexer lexer = new(sourceLines);
 		Result<List<Token>> tokenizeResult = lexer.Tokenize();
 		result.Combine(tokenizeResult);
 

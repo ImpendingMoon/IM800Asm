@@ -1,9 +1,9 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using IM800Asm.Assembly;
 using IM800Asm.Core;
 using IM800Asm.Lexing;
 using IM800Asm.Parsing;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace IM800Asm.Testing;
 
@@ -57,7 +57,16 @@ internal class Tester
 		{
 			TestResult testResult = new(testCase);
 
-			var lexer = new Lexer(testCase.Name, testCase.Source);
+			List<SourceLine> sourceLines = [];
+
+			for (int i = 0; i < testCase.Source.Length; i++)
+			{
+				string text = testCase.Source[i];
+				SourceLine sourceLine = new(testCase.Name, i, text);
+				sourceLines.Add(sourceLine);
+			}
+
+			var lexer = new Lexer(sourceLines);
 			Result<List<Token>> lexerResult = lexer.Tokenize();
 
 			if (!testResult.Result.IsSuccess)

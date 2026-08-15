@@ -1,14 +1,17 @@
-﻿using System.Diagnostics;
+using IM800Asm.Core;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
-using IM800Asm.Core;
 
 namespace IM800Asm.Lexing;
 
-internal class Lexer(string fileName, string[] sourceLines)
+internal class Lexer(List<SourceLine> sourceLines)
 {
 	private readonly List<Token> _tokens = [];
-	private SourceLocation _sourceLocation = new(fileName, 0, 0);
+	private int _lineIndex = 0;
+	private int _currentColumn = 0;
+	private SourceLine _currentLine => _lineIndex < sourceLines.Count ? sourceLines[_lineIndex] : new SourceLine(string.Empty, _lineIndex, string.Empty);
+	private SourceLocation _sourceLocation => new SourceLocation(_currentLine.FilePath, _currentLine.Line, _currentColumn);
 
 	public Result<List<Token>> Tokenize()
 	{
@@ -309,7 +312,7 @@ internal class Lexer(string fileName, string[] sourceLines)
 
 			result.ResultObject = new NumberToken(
 				_sourceLocation,
-				sourceLines[_sourceLocation.Line][startColumn.._sourceLocation.Column],
+				sourceLines[_lineIndex].Text[startColumn.._sourceLocation.Column],
 				parseResult.ResultObject
 			);
 		}
@@ -371,7 +374,7 @@ internal class Lexer(string fileName, string[] sourceLines)
 
 		result.ResultObject = new StringToken(
 			startSourceLocation,
-			sourceLines[_sourceLocation.Line][startSourceLocation.Column.._sourceLocation.Column],
+			sourceLines[_lineIndex].Text[startSourceLocation.Column.._sourceLocation.Column],
 			stringValue
 		);
 
@@ -486,7 +489,7 @@ internal class Lexer(string fileName, string[] sourceLines)
 
 		result.ResultObject = new IdentifierToken(
 			startSourceLocation,
-			sourceLines[_sourceLocation.Line][startColumn.._sourceLocation.Column]
+			sourceLines[_lineIndex].Text[startColumn.._sourceLocation.Column]
 		);
 
 		return true;
@@ -641,42 +644,42 @@ internal class Lexer(string fileName, string[] sourceLines)
 
 	private void ConsumeNewLine()
 	{
-		_sourceLocation.Line++;
-		_sourceLocation.Column = 0;
+		_lineIndex++;
+		_currentColumn = 0;
 	}
 
 	private char Current()
 	{
-		if (_sourceLocation.Line >= sourceLines.Length)
+		if (_lineIndex >= sourceLines.Count)
 		{
 			return '\0';
 		}
 
-		if (_sourceLocation.Column >= sourceLines[_sourceLocation.Line].Length)
+		if (_sourceLocation.Column >= sourceLines[_lineIndex].Text.Length)
 		{
 			return '\n';
 		}
 
-		return sourceLines[_sourceLocation.Line][_sourceLocation.Column];
+		return sourceLines[_lineIndex].Text[_sourceLocation.Column];
 	}
 
 	private char Next()
 	{
-		if (_sourceLocation.Line >= sourceLines.Length)
+		if (_lineIndex >= sourceLines.Count)
 		{
 			return '\0';
 		}
 
-		if (_sourceLocation.Column + 1 >= sourceLines[_sourceLocation.Line].Length)
+		if (_sourceLocation.Column + 1 >= sourceLines[_lineIndex].Text.Length)
 		{
 			return '\n';
 		}
 
-		return sourceLines[_sourceLocation.Line][_sourceLocation.Column + 1];
+		return sourceLines[_lineIndex].Text[_sourceLocation.Column + 1];
 	}
 
 	private void Advance(int count = 1)
 	{
-		_sourceLocation.Column += count;
+		_currentColumn += count;
 	}
 }
