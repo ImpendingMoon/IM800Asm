@@ -125,7 +125,7 @@ internal static class Program
 
 		if (!result.IsSuccess)
 		{
-			PrintErrors(result, preprocessResult.ResultObject);
+			PrintErrors(result, preprocessor.RawSourceLines);
 			return 1;
 		}
 
@@ -135,7 +135,7 @@ internal static class Program
 
 		if (!result.IsSuccess)
 		{
-			PrintErrors(result, preprocessResult.ResultObject);
+			PrintErrors(result, preprocessor.RawSourceLines);
 			return 1;
 		}
 
@@ -145,7 +145,7 @@ internal static class Program
 
 		if (!result.IsSuccess)
 		{
-			PrintErrors(result, preprocessResult.ResultObject);
+			PrintErrors(result, preprocessor.RawSourceLines);
 			return 1;
 		}
 
@@ -157,7 +157,7 @@ internal static class Program
 
 		if (!result.IsSuccess)
 		{
-			PrintErrors(result, preprocessResult.ResultObject);
+			PrintErrors(result, preprocessor.RawSourceLines);
 			return 1;
 		}
 
@@ -186,7 +186,7 @@ internal static class Program
 		return 0;
 	}
 
-	private static void PrintErrors(Result result, List<SourceLine> sourceLines)
+	private static void PrintErrors(Result result, IEnumerable<SourceLine> sourceLines)
 	{
 		if (result.Warnings.Count > 0)
 		{
@@ -225,7 +225,7 @@ internal static class Program
 		}
 	}
 
-	private static string GetSourceLine(List<SourceLine> sourceLines, string filePath, int line)
+	private static string GetSourceLine(IEnumerable<SourceLine> sourceLines, string filePath, int line)
 	{
 		foreach (SourceLine sourceLine in sourceLines)
 		{

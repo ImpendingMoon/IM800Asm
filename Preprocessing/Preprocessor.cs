@@ -9,6 +9,9 @@ internal class Preprocessor
 	private SourceContext _currentContext;
 	private HashSet<string> _activeIncludes = [];
 	private List<SourceLine> _outputLines = [];
+	private List<SourceLine> _rawSourceLines = [];
+
+	public IReadOnlyList<SourceLine> RawSourceLines => _rawSourceLines;
 
 	public Preprocessor(string filePath, string[] sourceLines)
 	{
@@ -36,8 +39,9 @@ internal class Preprocessor
 			else
 			{
 				string sourceText = _currentContext.SourceLines[_currentContext.CurrentLine];
+				_rawSourceLines.Add(new(_currentContext.FilePath, _currentContext.CurrentLine, sourceText));
 
-				// Check for preprocessor directives
+				// Check for preprocessor directives (this should check for comments and strings but for now it's fine)
 				if (sourceText.Contains("%include", StringComparison.OrdinalIgnoreCase))
 				{
 					// Pre-increment to skip the line with %include
@@ -72,10 +76,12 @@ internal class Preprocessor
 		}
 		else if (stringMatches.Count > 1)
 		{
+			sourceLocation.Column = stringMatches[1].Index;
 			result.AddError(sourceLocation, Constants.ErrorCode.UnexpectedOperand, "expected one string literal after %include directive");
 		}
 		else
 		{
+			sourceLocation.Column = stringMatches[0].Index;
 			string filePath = stringMatches[0].Value.Trim('"');
 
 			if (!Path.IsPathRooted(filePath))
