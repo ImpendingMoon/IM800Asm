@@ -113,12 +113,12 @@ internal class Tester
 			Console.WriteLine($"\tEXPECTED: {FormatBytes(testResult.ExpectedOutput)}");
 			Console.WriteLine($"\tACTUAL  : {FormatBytes(testResult.ActualOutput)}");
 
-			foreach (Result.Error warning in testResult.Result.Warnings)
+			foreach (Result.Diagnostic warning in testResult.Result.Warnings)
 			{
 				Console.WriteLine($"\tWARN: \"{warning}\"");
 			}
 
-			foreach (Result.Error error in testResult.Result.Errors)
+			foreach (Result.Diagnostic error in testResult.Result.Errors)
 			{
 				Console.WriteLine($"\tERROR: \"{error}\"");
 			}

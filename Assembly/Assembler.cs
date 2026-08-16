@@ -204,12 +204,12 @@ internal partial class Assembler
 				}
 
 				_lastDefinedSymbol = string.Empty;
-
-				// Things like .RESB have a length but do not emit anything
-				// This is to sanity check things emitting more than they should, mostly
-				Debug.Assert(_bytesEmittedForCurrentStatement == 0 || _bytesEmittedForCurrentStatement == st.Length);
-				Debug.Assert(_bytesEmittedForCurrentStatement == 0 || _data.Count == st.FileOffset + st.Length);
 			}
+
+			// Things like .RESB have a length but do not emit anything
+			// This is to sanity check things emitting more than they should, mostly
+			Debug.Assert(_bytesEmittedForCurrentStatement == 0 || _bytesEmittedForCurrentStatement == st.Length);
+			Debug.Assert(_bytesEmittedForCurrentStatement == 0 || _data.Count == st.FileOffset + st.Length);
 		}
 
 		return result;

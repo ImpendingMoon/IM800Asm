@@ -1,28 +1,28 @@
-﻿namespace IM800Asm.Core;
+namespace IM800Asm.Core;
 
 /// <summary>
 ///     For actions where failure is an expected result.
 /// </summary>
 public class Result
 {
-	private readonly List<Error> _errors = [];
-	private readonly List<Error> _warnings = [];
+	private readonly List<Diagnostic> _errors = [];
+	private readonly List<Diagnostic> _warnings = [];
 
 	public bool IsSuccess => Errors.Count == 0;
 
-	public IReadOnlyList<Error> Errors => _errors;
-	public IReadOnlyList<Error> Warnings => _warnings;
+	public IReadOnlyList<Diagnostic> Errors => _errors;
+	public IReadOnlyList<Diagnostic> Warnings => _warnings;
 
 	/// <summary>Adds an error to this result.</summary>
 	public void AddError(SourceLocation location, Constants.ErrorCode code, string message)
 	{
-		_errors.Add(new Error(location, code, Constants.ErrorSeverity.Error, message));
+		_errors.Add(new Diagnostic(location, code, Constants.ErrorSeverity.Error, message));
 	}
 
 	/// <summary>Adds a warning to this result.</summary>
 	public void AddWarning(SourceLocation location, Constants.ErrorCode code, string message)
 	{
-		_warnings.Add(new Error(location, code, Constants.ErrorSeverity.Warning, message));
+		_warnings.Add(new Diagnostic(location, code, Constants.ErrorSeverity.Warning, message));
 	}
 
 	/// <summary>Appends the messages of another result to this result.</summary>
@@ -32,7 +32,7 @@ public class Result
 		_warnings.AddRange(other._warnings);
 	}
 
-	public class Error(
+	public class Diagnostic(
 		SourceLocation sourceLocation,
 		Constants.ErrorCode code,
 		Constants.ErrorSeverity severity,

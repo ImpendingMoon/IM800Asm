@@ -6,8 +6,7 @@ This project is written in C# using .NET 10 and is designed to be small, straigh
 It assembles a single assembly source file into a binary image and can optionally generate symbol and listing files for
 debugging.
 
-It currently does not implement macros or conditional assembly. I recommend using m4 or a similar tool for this
-functionality.
+It currently does not implement macros or conditional assembly. m4 or a similar tool can be used for these features.
 
 ## Building
 

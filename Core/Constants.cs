@@ -53,6 +53,11 @@ public static class Constants
 	public enum ErrorCode
 	{
 		None = 0,
+		Unknown = 001,
+
+		// Preprocessor
+		FileNotFound = 002,
+		CircularDependency = 003,
 
 		// Lexer
 		UnexpectedCharacter = 100,
