@@ -12,4 +12,9 @@ internal class SourceLine
 	public string FilePath { get; set; }
 	public int Line { get; set; }
 	public string Text { get; set; }
+
+	public override string ToString()
+	{
+		return $"{FilePath}:{Line}:\t{Text}";
+	}
 }

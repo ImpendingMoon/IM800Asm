@@ -300,7 +300,7 @@ internal static class Program
 	private static void WriteSymbolFile(string filePath, IReadOnlyDictionary<string, Symbol> symbolTable)
 	{
 		List<string> lines = [];
-		foreach (KeyValuePair<string, Symbol> kvp in symbolTable.OrderBy(x => x.Value.Value))
+		foreach (KeyValuePair<string, Symbol> kvp in symbolTable.OrderBy(x => x.Value.Type).ThenBy(x => x.Value.Value))
 		{
 			Symbol symbol = kvp.Value;
 			if (symbol.Type == Constants.SymbolType.Label)
