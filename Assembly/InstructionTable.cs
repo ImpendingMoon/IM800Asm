@@ -128,6 +128,20 @@ internal static class InstructionTable
 				],
 				Constants.Size.Word,
 				0b00010
+			),
+			new Entry(
+				[
+					new OperandSlot(Constants.AcceptedOperandType.Memory),
+					new OperandSlot(Constants.AcceptedOperandType.Immediate)
+				],
+				Constants.InstructionFormat.RM,
+				[
+					Constants.Size.Byte,
+					Constants.Size.Word,
+					Constants.Size.Dword
+				],
+				Constants.Size.Word,
+				0b00010
 			)
 		],
 		[Constants.Instruction.ADD] = MakeStandardRRMEntries(0b00100),
