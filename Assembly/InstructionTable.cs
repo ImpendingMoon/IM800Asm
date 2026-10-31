@@ -265,9 +265,11 @@ internal static class InstructionTable
 				],
 				Constants.InstructionFormat.UR,
 				[
-					Constants.Size.Dword
+					Constants.Size.Byte,
+					Constants.Size.Word,
+					Constants.Size.Dword,
 				],
-				Constants.Size.Dword,
+				Constants.Size.Word,
 				0b0000,
 				0b001
 			),
@@ -277,9 +279,11 @@ internal static class InstructionTable
 				],
 				Constants.InstructionFormat.UR,
 				[
-					Constants.Size.Dword
+					Constants.Size.Byte,
+					Constants.Size.Word,
+					Constants.Size.Dword,
 				],
-				Constants.Size.Dword,
+				Constants.Size.Word,
 				0b0000,
 				0b001
 			)
@@ -292,9 +296,11 @@ internal static class InstructionTable
 				],
 				Constants.InstructionFormat.UR,
 				[
+					Constants.Size.Byte,
+					Constants.Size.Word,
 					Constants.Size.Dword
 				],
-				Constants.Size.Dword,
+				Constants.Size.Word,
 				0b0000,
 				0b010
 			)
