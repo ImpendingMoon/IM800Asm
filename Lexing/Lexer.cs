@@ -556,6 +556,10 @@ internal class Lexer(List<SourceLine> sourceLines)
 					result.ResultObject = '\'';
 					Advance();
 					break;
+				case '\\':
+					result.ResultObject = '\\';
+					Advance();
+					break;
 				case '"':
 					result.ResultObject = '"';
 					Advance();
