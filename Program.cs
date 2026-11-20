@@ -1,5 +1,6 @@
 using IM800Asm.Assembly;
 using IM800Asm.Core;
+using IM800Asm.DebugOutput;
 using IM800Asm.Lexing;
 using IM800Asm.Parsing;
 using IM800Asm.Preprocessing;
@@ -7,6 +8,8 @@ using IM800Asm.Testing;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace IM800Asm;
 
@@ -24,6 +27,7 @@ internal static class Program
 		string? outputFile = null;
 		string? symbolFile = null;
 		string? listingFile = null;
+		string? debugFile = null;
 
 		for (int i = 0; i < args.Length; i++)
 		{
@@ -77,6 +81,16 @@ internal static class Program
 					}
 
 					listingFile = ExpandPath(args[i]);
+					break;
+
+				case "-d":
+					if (++i >= args.Length)
+					{
+						Console.Error.WriteLine("error: -d requires a filename.");
+						return 1;
+					}
+
+					debugFile = ExpandPath(args[i]);
 					break;
 
 				default:
@@ -175,6 +189,18 @@ internal static class Program
 				preprocessResult.ResultObject,
 				parseResult.ResultObject,
 				assembleResult.ResultObject
+			);
+		}
+
+		if (debugFile != null)
+		{
+			WriteDebugFile(
+				outputFile,
+				assembleResult.ResultObject.Count,
+				debugFile,
+				preprocessResult.ResultObject,
+				parseResult.ResultObject,
+				assembler.SymbolTable
 			);
 		}
 
@@ -278,7 +304,8 @@ internal static class Program
             Options:
               -o <file>      Output binary file (default: <input>.bin)
               -s <file>      Write symbol table
-              -l <file>      Write listing file (stub)
+              -l <file>      Write listing file
+              -d <file>      Write debug file
               --test <file>  Run assembler tests
               -h, --help     Show this help
               -v, --version  Show version information
@@ -431,6 +458,114 @@ internal static class Program
 		}
 
 		File.WriteAllText(filePath, sb.ToString());
+	}
+
+	private static void WriteDebugFile
+	(
+		string outputFilePath,
+		int outputFileSize,
+		string debugFilePath,
+		List<SourceLine> sourceLines,
+		List<Statement> statements,
+		IReadOnlyDictionary<string, Symbol> symbolTable
+	)
+	{
+		// Source files are indexed in order of first appearance
+		List<string> sourceFileNames = [];
+		Dictionary<string, int> fileIndices = new(StringComparer.Ordinal);
+
+		int GetFileIndex(string filePath)
+		{
+			if (!fileIndices.TryGetValue(filePath, out int index))
+			{
+				index = sourceFileNames.Count;
+				sourceFileNames.Add(filePath);
+				fileIndices[filePath] = index;
+			}
+
+			return index;
+		}
+
+		// Source lines (same logic as the listing file)
+		List<DebugSourceLine> debugLines = [];
+		int currentStatement = 0;
+		long currentBaseAddress = 0;
+
+		foreach (SourceLine sourceLine in sourceLines)
+		{
+			int outputLength = 0;
+			bool hasAddress = false;
+
+			while (currentStatement < statements.Count)
+			{
+				Statement statement = statements[currentStatement];
+
+				// We've reached statements for a later source line.
+				if (statement.SourceLocation.FilePath != sourceLine.FilePath || statement.SourceLocation.Line > sourceLine.Line)
+				{
+					break;
+				}
+
+				currentStatement++;
+
+				// First statement on this source line determines the address.
+				if (!hasAddress)
+				{
+					currentBaseAddress = (long)statement.MeasuredLocationCounter;
+					hasAddress = true;
+				}
+
+				// Directives like ORG have a length but do not emit any bytes
+				if (!statement.EmitsData)
+				{
+					continue;
+				}
+
+				outputLength += (int)statement.Length;
+			}
+
+			debugLines.Add(new DebugSourceLine
+			{
+				SourceFileNameIndex = GetFileIndex(sourceLine.FilePath),
+				Line = sourceLine.Line,
+				BaseAddress = currentBaseAddress,
+				OutputLength = outputLength,
+				Text = sourceLine.Text,
+			});
+		}
+
+		// Symbols (same ordering as the symbol file)
+		List<DebugSymbol> debugSymbols = [];
+		foreach (Symbol symbol in symbolTable.Values.OrderBy(x => x.Type).ThenBy(x => x.Value))
+		{
+			debugSymbols.Add(new DebugSymbol
+			{
+				SourceFileNameIndex = GetFileIndex(symbol.SourceLocation.FilePath),
+				Line = symbol.SourceLocation.Line,
+				Name = symbol.Name,
+				SymbolType = symbol.Type,
+				Value = (long)symbol.Value,
+			});
+		}
+
+		var debugFile = new DebugFile
+		{
+			Assembler = "IM800Asm",
+			FileVersion = 1,
+			OutputFilePath = outputFilePath,
+			OutputFileSize = outputFileSize,
+			SourceFileNames = sourceFileNames,
+			Symbols = debugSymbols,
+			SourceLines = debugLines,
+		};
+
+		JsonSerializerOptions options = new()
+		{
+			WriteIndented = true,
+			Converters = { new JsonStringEnumConverter() },
+		};
+
+		File.WriteAllText(debugFilePath, JsonSerializer.Serialize(debugFile, options));
 	}
 
 	private static void RunTests(string fileName)

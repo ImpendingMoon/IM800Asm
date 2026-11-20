@@ -82,7 +82,7 @@ internal partial class Assembler
 
 			if (st is LabelStatement ls)
 			{
-				if (TryDefineSymbol(ls.Text, _locationCounter))
+				if (TryDefineSymbol(ls.SourceLocation, ls.Text, _locationCounter))
 				{
 					_lastDefinedSymbol = ls.Text;
 
@@ -221,7 +221,7 @@ internal partial class Assembler
 	/// <param name="symbol">Symbol name. Will be expanded to fully qualified name.</param>
 	/// <param name="value"></param>
 	/// <returns>true if successful, false if symbol is already defined</returns>
-	private bool TryDefineSymbol(string symbol, long value)
+	private bool TryDefineSymbol(SourceLocation sourceLocation, string symbol, long value)
 	{
 		string qualifiedName = GetQualifiedName(symbol);
 
@@ -230,7 +230,7 @@ internal partial class Assembler
 			return false;
 		}
 
-		_symbolTable[qualifiedName] = new Symbol(Constants.SymbolType.Label, qualifiedName, value);
+		_symbolTable[qualifiedName] = new Symbol(sourceLocation, Constants.SymbolType.Label, qualifiedName, value);
 		return true;
 	}
 
@@ -239,10 +239,10 @@ internal partial class Assembler
 	/// </summary>
 	/// <param name="symbol">Symbol name. Will be expanded to fully qualified name.</param>
 	/// <param name="value"></param>
-	private void RedefineSymbolAsEQU(string symbol, long value)
+	private void RedefineSymbolAsEQU(SourceLocation sourceLocation, string symbol, long value)
 	{
 		string qualifiedName = GetQualifiedName(symbol);
-		_symbolTable[qualifiedName] = new Symbol(Constants.SymbolType.EQU, qualifiedName, value);
+		_symbolTable[qualifiedName] = new Symbol(sourceLocation, Constants.SymbolType.EQU, qualifiedName, value);
 	}
 
 	/// <summary>
